@@ -1,0 +1,32 @@
+{
+	"schemaVersion": 1,
+	"id": "inventorybackup",
+	"version": "${version}",
+	"name": "InventoryBackup",
+	"description": "Commands for restoring player inventories",
+	"authors": [
+		"TransientChicken"
+	],
+	"contact": {
+		"homepage": "https://fabricmc.net/",
+		"sources": "https://github.com/FabricMC/fabric-example-mod"
+	},
+	"license": "CC0-1.0",
+	"icon": "assets/inventorybackup/icon.png",
+	"environment": "*",
+	"entrypoints": {
+		"main": [
+			"edu.byu.minecraft.InventoryBackup"
+		]
+	},
+	"depends": {
+		"fabricloader": ">=0.14.24",
+		"minecraft": "~1.20.1",
+		"java": ">=17",
+		"fabric-api": "*",
+		"luckperms": "*"
+	},
+	"suggests": {
+		"another-mod": "*"
+	}
+}
