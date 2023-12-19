@@ -19,6 +19,7 @@
 			"edu.byu.minecraft.InventoryBackup"
 		]
 	},
+	"mixins": ["invbackup.mixins.json"],
 	"depends": {
 		"fabricloader": ">=0.14.24",
 		"minecraft": "~1.20.1",
