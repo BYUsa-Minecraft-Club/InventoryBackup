@@ -1,26 +1,21 @@
 package edu.byu.minecraft.invbackup.gui;
 
+import eu.pb4.sgui.api.elements.GuiElementBuilder;
 import net.minecraft.item.Items;
 
 public class Config {
 
-    public static Variant<IconData> previousButton =
-            Variant.of(IconData.of(Items.ARROW, "Previous Page"),
-                    IconData.of(Items.AIR, "Previous Page"));
+    public static GuiElementBuilder previousButton = GuiSlot.builder(Items.ARROW, "Previous Page");
 
+    public static GuiElementBuilder nextButton = GuiSlot.builder(Items.ARROW, "Next Page");
 
-    public static Variant<IconData> nextButton =
-            Variant.of(IconData.of(Items.ARROW, "Next Page"),
-                    IconData.of(Items.AIR, "Next Page"));
+    public static GuiElementBuilder backButton = GuiSlot.builder(Items.BARRIER, "Previous Menu");
 
+    public static GuiElementBuilder teleportButton = GuiSlot.builder(Items.ENDER_PEARL, "Teleport to Event");
 
-    public static IconData backButton = IconData.of(Items.BARRIER, "Previous Menu");
+    public static GuiElementBuilder restoreButton = GuiSlot.builder(Items.LIME_DYE, "Restore Inventory");
 
-    public static IconData teleportButton = IconData.of(Items.ENDER_PEARL, "Teleport to Event");
-
-    public static IconData restoreButton = IconData.of(Items.LIME_DYE, "Restore Inventory");
-
-    public static IconData restoreOfflineButton = IconData.of(Items.LIGHT_GRAY_DYE, "Player Offline");
+    public static GuiElementBuilder restoreOfflineButton = GuiSlot.builder(Items.LIGHT_GRAY_DYE, "Player Offline");
 
 
 }

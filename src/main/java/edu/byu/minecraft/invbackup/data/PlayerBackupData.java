@@ -4,8 +4,6 @@ package edu.byu.minecraft.invbackup.data;
 import net.minecraft.entity.player.HungerManager;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.inventory.EnderChestInventory;
-import net.minecraft.inventory.Inventory;
-import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.server.network.ServerPlayerEntity;

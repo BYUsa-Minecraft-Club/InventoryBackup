@@ -1,14 +1,14 @@
 package edu.byu.minecraft.invbackup.gui;
 
-import com.mojang.authlib.GameProfile;
 import edu.byu.minecraft.InventoryBackup;
-import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtList;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.text.Text;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 public class AllBackupListGui extends PagedGui {
     private int ticker = 0;
@@ -18,7 +18,7 @@ public class AllBackupListGui extends PagedGui {
     public AllBackupListGui(ServerPlayerEntity player) {
         super(player);
 
-        this.setTitle(WrappedText.of("All Players").text());
+        this.setTitle(Text.of("All Players"));
         this.players = getPlayers();
         this.updateDisplay();
     }
@@ -33,8 +33,7 @@ public class AllBackupListGui extends PagedGui {
         if (id < this.players.size()) {
             Map.Entry<UUID, String> playerData = players.get(id);
 
-            var element = IconData.of(Items.CHEST, playerData.getValue())
-                    .builder(new HashMap<>())
+            var element = GuiSlot.builder(Items.CHEST, playerData.getValue())
                     .setCallback((index, type, action) -> new PlayerBackupListGui(playerData.getKey(), playerData.getValue(), player).open());
 
             return GuiSlot.of(element);

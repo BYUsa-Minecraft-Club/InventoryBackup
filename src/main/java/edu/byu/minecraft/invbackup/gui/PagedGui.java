@@ -6,20 +6,14 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.sound.SoundEvents;
-import net.minecraft.text.Text;
 
 public abstract class PagedGui extends SimpleGui {
-    public static final int PAGE_SIZE = 9 * 4;
+    public static final int PAGE_SIZE = 9 * 5;
     protected int page = 0;
 
     public PagedGui(ServerPlayerEntity player) {
-        super(ScreenHandlerType.GENERIC_9X5, player, false);
+        super(ScreenHandlerType.GENERIC_9X6, player, false);
     }
-
-//    @Override
-//    public void setTitle(Text title) {
-//        super.setTitle(GraveTextures.get(this.getPlayer(), title));
-//    }
 
     protected void nextPage() {
         this.page = Math.min(this.getPageAmount() - 1, this.page + 1);
@@ -51,8 +45,6 @@ public abstract class PagedGui extends SimpleGui {
 
             if (element.element() != null) {
                 this.setSlot(i, element.element());
-            } else if (element.slot() != null) {
-                this.setSlotRedirect(i, element.slot());
             }
         }
 
@@ -65,8 +57,6 @@ public abstract class PagedGui extends SimpleGui {
 
             if (navElement.element() != null) {
                 this.setSlot(i + PAGE_SIZE, navElement.element());
-            } else if (navElement.slot() != null) {
-                this.setSlotRedirect(i + PAGE_SIZE, navElement.slot());
             }
         }
     }
@@ -85,7 +75,7 @@ public abstract class PagedGui extends SimpleGui {
         player.playSound(SoundEvents.UI_BUTTON_CLICK.value(), SoundCategory.MASTER, 1, 1);
     }
 
-    public static final void playClickSound(ServerPlayerEntity player, SoundEvent soundEvent) {
+    public static void playClickSound(ServerPlayerEntity player, SoundEvent soundEvent) {
         player.playSound(soundEvent, SoundCategory.MASTER, 1, 1);
     }
 }

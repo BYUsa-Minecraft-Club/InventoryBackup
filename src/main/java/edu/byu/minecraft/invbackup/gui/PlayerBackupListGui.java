@@ -1,13 +1,14 @@
 package edu.byu.minecraft.invbackup.gui;
 
-import com.mojang.authlib.GameProfile;
 import edu.byu.minecraft.InventoryBackup;
 import edu.byu.minecraft.invbackup.data.LogType;
 import net.minecraft.item.Items;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 
 public class PlayerBackupListGui extends PagedGui {
     private final UUID targetUUID;
@@ -19,7 +20,7 @@ public class PlayerBackupListGui extends PagedGui {
         super(player);
         this.targetUUID = uuid;
         this.playerName = playerName;
-        this.setTitle(WrappedText.of(playerName + "'s backups").text());
+        this.setTitle(Text.of(playerName + "'s backups"));
         this.types = new ArrayList<>(InventoryBackup.data.getData().get(uuid).keySet());
         this.updateDisplay();
     }
@@ -34,15 +35,13 @@ public class PlayerBackupListGui extends PagedGui {
         if (id < this.types.size()) {
             LogType logType = types.get(id);
 
-            var element = IconData.of(Items.CHEST, logType.name())
-                    .builder(new HashMap<>())
+            var element = GuiSlot.builder(Items.CHEST, logType.name())
                     .setCallback((index, type, action) -> new TypedBackupListGui(targetUUID, playerName, logType, player).open());
 
             return GuiSlot.of(element);
         }
         else if (id == this.types.size()) {
-            var element = IconData.of(Items.CHEST, "ALL")
-                    .builder(new HashMap<>())
+            var element = GuiSlot.builder(Items.CHEST, "ALL")
                     .setCallback((index, type, action) -> new TypedBackupListGui(targetUUID, playerName, null, player).open());
 
             return GuiSlot.of(element);

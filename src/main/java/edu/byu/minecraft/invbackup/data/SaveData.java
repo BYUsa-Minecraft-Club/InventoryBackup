@@ -87,7 +87,7 @@ public class SaveData extends PersistentState {
 
         //This will break on update, view https://fabricmc.net/wiki/tutorial:persistent_states for new way
         SaveData state =
-                persistentStateManager.getOrCreate(SaveData::createFromNbt, SaveData::new, InventoryBackup.MOD_ID);
+                persistentStateManager.getOrCreate(new Type<SaveData>(SaveData::new, SaveData::createFromNbt, null),  InventoryBackup.MOD_ID);
         state.markDirty();
         return state;
     }

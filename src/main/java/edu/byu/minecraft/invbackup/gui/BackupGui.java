@@ -1,16 +1,9 @@
 package edu.byu.minecraft.invbackup.gui;
 
-import edu.byu.minecraft.invbackup.data.LogType;
 import edu.byu.minecraft.invbackup.data.PlayerBackupData;
-import eu.pb4.sgui.api.ClickType;
-import eu.pb4.sgui.api.GuiHelpers;
 import eu.pb4.sgui.api.gui.GuiInterface;
-import me.lucko.fabric.api.permissions.v0.Permissions;
-import net.minecraft.inventory.Inventory;
-import net.minecraft.item.Items;
-import net.minecraft.screen.slot.SlotActionType;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.sound.SoundEvents;
+import net.minecraft.text.Text;
 
 import java.util.Objects;
 import java.util.UUID;
@@ -27,7 +20,7 @@ public class BackupGui extends PagedGui {
         this.targetUUID = uuid;
         this.playerName = playerName;
         this.playerBackupData = playerBackupData;
-        this.setTitle(WrappedText.of(String.format("%s's, %s backup", playerName, playerBackupData.getLogType())).text());
+        this.setTitle(Text.of(String.format("%s's, %s backup", playerName, playerBackupData.getLogType())));
         this.previousUi = previousUi;
         this.updateDisplay();
     }
@@ -40,17 +33,23 @@ public class BackupGui extends PagedGui {
 
     @Override
     protected GuiSlot getElement(int id) {
-        if(id < 27) {
-            return GuiSlot.of(new OutputSlot(playerBackupData.getMainInventory(), id + 9, 0, 0));
+        if(id < 4) {                                                         //3 - id -> helmet first
+            return GuiSlot.of(playerBackupData.getMainInventory().getArmorStack(3 - id));
         }
-        else if (id < 36) {
-            return GuiSlot.of(new OutputSlot(playerBackupData.getMainInventory(), id - 27, 0, 0));
+        else if(id == 8) {                                                  //40 == offhand
+            return GuiSlot.of(playerBackupData.getMainInventory().getStack(40));
         }
-        else if (id < 42) {
-            return GuiSlot.of(new OutputSlot(playerBackupData.getMainInventory(), id, 0, 0));
+        else if(id < 9) {
+            return GuiSlot.empty();
         }
-        else if (id > 44 && id < 72) {
-            return GuiSlot.of(new OutputSlot(playerBackupData.getEnderChest(), id - 45, 0, 0));
+        else if(id < 36) {
+            return GuiSlot.of(playerBackupData.getMainInventory().getStack(id));
+        }
+        else if (id < 45) {
+            return GuiSlot.of(playerBackupData.getMainInventory().getStack(id - 36));
+        }
+        else if (id < 72) {
+            return GuiSlot.of(playerBackupData.getEnderChest().getStack(id - 45));
         }
         return GuiSlot.empty();
     }

@@ -6,6 +6,7 @@ import edu.byu.minecraft.invbackup.data.PlayerBackupData;
 import net.minecraft.item.Item;
 import net.minecraft.item.Items;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.text.Text;
 
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -29,7 +30,7 @@ public class TypedBackupListGui extends PagedGui {
         this.playerName = playerName;
         this.logType = logType;
         String logTypeStr = (logType == null) ? "ALL" : logType.name();
-        this.setTitle(WrappedText.of(String.format("%s's, %s backups", playerName, logTypeStr)).text());
+        this.setTitle(Text.of(String.format("%s's, %s backups", playerName, logTypeStr)));
         this.data = getData();
         this.updateDisplay();
     }
@@ -59,7 +60,7 @@ public class TypedBackupListGui extends PagedGui {
                 case FORCE -> Items.STRUCTURE_VOID;
             };
 
-            var element = IconData.of(displayItem, title).builder(new HashMap<>()).setCallback(
+            var element = GuiSlot.builder(displayItem, title).setCallback(
                     (index, type, action) -> new BackupGui(targetUUID, playerName, backupData, this, player).open());
 
             return GuiSlot.of(element);
