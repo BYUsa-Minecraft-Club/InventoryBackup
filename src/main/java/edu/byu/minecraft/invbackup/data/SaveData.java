@@ -73,7 +73,7 @@ public class SaveData extends PersistentState {
 
         Map<UUID, String> players = new HashMap<>();
         NbtList playersNbt = (NbtList) tag.get("players");
-        playersNbt.forEach(playerNbt -> {
+        if(playersNbt != null) playersNbt.forEach(playerNbt -> {
             NbtCompound playerData = (NbtCompound) playerNbt;
             players.put(playerData.getUuid("uuid"), playerData.getString("ign"));
         });
@@ -85,12 +85,8 @@ public class SaveData extends PersistentState {
 
     public static SaveData getServerState(MinecraftServer server) {
         PersistentStateManager persistentStateManager = server.getOverworld().getPersistentStateManager();
-
-        //This will break on update, view https://fabricmc.net/wiki/tutorial:persistent_states for new way
-        SaveData state =
-                persistentStateManager.getOrCreate(new Type<>(SaveData::new, SaveData::createFromNbt, null),  InventoryBackup.MOD_ID);
-        state.markDirty();
-        return state;
+        Type<SaveData> type = new Type<>(SaveData::new, SaveData::createFromNbt, null);
+        return persistentStateManager.getOrCreate(type,  InventoryBackup.MOD_ID);
     }
 
 
@@ -119,6 +115,8 @@ public class SaveData extends PersistentState {
         while (max < data.get(backup.getUuid()).get(backup.getLogType()).size()) {
             data.get(backup.getUuid()).get(backup.getLogType()).removeFirst();
         }
+
+        markDirty();
     }
 
 
