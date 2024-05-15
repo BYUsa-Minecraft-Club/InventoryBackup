@@ -4,6 +4,7 @@ import edu.byu.minecraft.invbackup.data.PlayerBackupData;
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
 import eu.pb4.sgui.api.elements.GuiElementBuilderInterface;
 import eu.pb4.sgui.api.elements.GuiElementInterface;
+import net.minecraft.inventory.SimpleInventory;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.registry.RegistryKey;
@@ -14,6 +15,7 @@ import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.collection.DefaultedList;
 import net.minecraft.util.math.Vec3d;
 import org.jetbrains.annotations.Nullable;
 
@@ -31,7 +33,7 @@ public record GuiSlot(@Nullable GuiElementInterface element) {
 
 
     public static GuiSlot of(ItemStack baseStack) {
-        return of(GuiElementBuilder.from(baseStack).hideDefaultTooltip());
+        return of(GuiElementBuilder.from(baseStack));
     }
 
 
@@ -103,17 +105,7 @@ public record GuiSlot(@Nullable GuiElementInterface element) {
     public static GuiSlot restore(MinecraftServer server, PlayerBackupData data) {
         ServerPlayerEntity targetPlayer = server.getPlayerManager().getPlayer(data.getUuid());
         if (targetPlayer == null) return GuiSlot.of(Config.restoreOfflineButton);
-        else return GuiSlot.of(Config.restoreButton.setCallback(() -> {
-            for (int i = 0; i < data.getMainInventory().size(); i++) {
-                targetPlayer.getInventory().setStack(i, data.getMainInventory().getStack(i).copy());
-            }
-            for (int i = 0; i < data.getEnderChest().size(); i++) {
-                targetPlayer.getEnderChestInventory().setStack(i, data.getEnderChest().getStack(i).copy());
-            }
-            targetPlayer.setExperienceLevel(data.getExperienceLevel());
-            targetPlayer.setExperiencePoints(
-                    (int) (data.getExperienceProgress() * targetPlayer.getNextLevelExperience()));
-        }));
+        else return GuiSlot.of(Config.restoreButton.setCallback(() -> data.restore(targetPlayer)));
     }
 
 }
