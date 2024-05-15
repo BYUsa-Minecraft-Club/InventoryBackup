@@ -3,6 +3,7 @@ package edu.byu.minecraft.invbackup.data;
 import edu.byu.minecraft.InventoryBackup;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtList;
+import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.world.PersistentState;
@@ -18,7 +19,7 @@ public class SaveData extends PersistentState {
 
 
     @Override
-    public NbtCompound writeNbt(NbtCompound nbt) {
+    public NbtCompound writeNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup lookup) {
         NbtCompound dataNbt = new NbtCompound();
         data.forEach((uuid, playerMap) -> {
             NbtCompound worldNbt = new NbtCompound();
@@ -26,7 +27,7 @@ public class SaveData extends PersistentState {
                 NbtCompound playerNbt = new NbtCompound();
                 playerNbt.putInt("size", backupDataList.size());
                 for (int i = 0; i < backupDataList.size(); i++) {
-                    playerNbt.put(String.valueOf(i), backupDataList.get(i).toNbt());
+                    playerNbt.put(String.valueOf(i), backupDataList.get(i).toNbt(lookup));
                 }
                 worldNbt.put(logType.name(), playerNbt);
             });
@@ -47,7 +48,7 @@ public class SaveData extends PersistentState {
     }
 
 
-    public static SaveData createFromNbt(NbtCompound tag) {
+    public static SaveData createFromNbt(NbtCompound tag, RegistryWrapper.WrapperLookup lookup) {
         SaveData state = new SaveData();
 
         Map<UUID, EnumMap<LogType, List<PlayerBackupData>>> data = new HashMap<>();
@@ -64,7 +65,7 @@ public class SaveData extends PersistentState {
                 logTypeMap.put(LogType.valueOf(logType), backupDataList);
                 playerNbt.getKeys().forEach(num -> {
                     if (num.equals("size")) return;
-                    backupDataList.set(Integer.parseInt(num), new PlayerBackupData(playerNbt.getCompound(num)));
+                    backupDataList.set(Integer.parseInt(num), new PlayerBackupData(playerNbt.getCompound(num), lookup));
                 });
             });
         });
@@ -87,7 +88,7 @@ public class SaveData extends PersistentState {
 
         //This will break on update, view https://fabricmc.net/wiki/tutorial:persistent_states for new way
         SaveData state =
-                persistentStateManager.getOrCreate(new Type<SaveData>(SaveData::new, SaveData::createFromNbt, null),  InventoryBackup.MOD_ID);
+                persistentStateManager.getOrCreate(new Type<>(SaveData::new, SaveData::createFromNbt, null),  InventoryBackup.MOD_ID);
         state.markDirty();
         return state;
     }
@@ -116,7 +117,7 @@ public class SaveData extends PersistentState {
         };
 
         while (max < data.get(backup.getUuid()).get(backup.getLogType()).size()) {
-            data.get(backup.getUuid()).get(backup.getLogType()).remove(0);
+            data.get(backup.getUuid()).get(backup.getLogType()).removeFirst();
         }
     }
 

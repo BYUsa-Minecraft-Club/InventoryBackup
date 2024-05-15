@@ -31,7 +31,7 @@ public record GuiSlot(@Nullable GuiElementInterface element) {
 
 
     public static GuiSlot of(ItemStack baseStack) {
-        return of(GuiElementBuilder.from(baseStack).hideFlags());
+        return of(GuiElementBuilder.from(baseStack).hideDefaultTooltip());
     }
 
 
@@ -43,7 +43,7 @@ public record GuiSlot(@Nullable GuiElementInterface element) {
         if (list.isEmpty()) {
             list.add(Text.empty());
         }
-        return GuiElementBuilder.from(base.getDefaultStack()).setName(list.remove(0)).setLore(list).hideFlags();
+        return GuiElementBuilder.from(base.getDefaultStack()).setName(list.removeFirst()).setLore(list).hideDefaultTooltip();
     }
 
 

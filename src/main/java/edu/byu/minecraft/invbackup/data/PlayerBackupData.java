@@ -4,8 +4,10 @@ package edu.byu.minecraft.invbackup.data;
 import net.minecraft.entity.player.HungerManager;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.inventory.EnderChestInventory;
+import net.minecraft.inventory.SimpleInventory;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtList;
+import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.Vec3d;
@@ -78,7 +80,7 @@ public class PlayerBackupData {
         pos = player.getPos();
     }
 
-    public PlayerBackupData(NbtCompound nbt) {
+    public PlayerBackupData(NbtCompound nbt, RegistryWrapper.WrapperLookup lookup) {
         uuid = nbt.getUuid("uuid");
         timestamp = nbt.getLong("timestamp");
 
@@ -86,7 +88,7 @@ public class PlayerBackupData {
         mainInventory.readNbt((NbtList) nbt.get("mainInventory"));
 
         enderChest = new EnderChestInventory();
-        enderChest.readNbtList((NbtList) nbt.get("enderChest"));
+        enderChest.readNbtList((NbtList) nbt.get("enderChest"), lookup);
 
         experienceLevel = nbt.getInt("experienceLevel");
         totalExperience = nbt.getInt("totalExperience");
@@ -102,13 +104,13 @@ public class PlayerBackupData {
         deathReason = (nbt.contains("deathReason")) ? nbt.getString("deathReason") : null;
     }
 
-    public NbtCompound toNbt() {
+    public NbtCompound toNbt(RegistryWrapper.WrapperLookup lookup) {
         NbtCompound nbtCompound = new NbtCompound();
 
         nbtCompound.putUuid("uuid", uuid);
         nbtCompound.putLong("timestamp", timestamp);
         nbtCompound.put("mainInventory", mainInventory.writeNbt(new NbtList()));
-        nbtCompound.put("enderChest", enderChest.toNbtList());
+        nbtCompound.put("enderChest", enderChest.toNbtList(lookup));
         nbtCompound.putInt("experienceLevel", experienceLevel);
         nbtCompound.putInt("totalExperience", totalExperience);
         nbtCompound.putFloat("experienceProgress", experienceProgress);
