@@ -104,13 +104,7 @@ public class SaveData extends PersistentState {
         }
         data.get(backup.getUuid()).get(backup.getLogType()).add(backup);
 
-        int max = switch (backup.getLogType()) {
-            case JOIN -> InventoryBackup.maxSavesJoin;
-            case QUIT -> InventoryBackup.maxSavesQuit;
-            case DEATH -> InventoryBackup.maxSavesDeath;
-            case WORLD_CHANGE -> InventoryBackup.maxSavesWorldChange;
-            case FORCE -> InventoryBackup.maxSavesForce;
-        };
+        int max = InventoryBackup.maxSaves(backup.getLogType());
 
         while (max < data.get(backup.getUuid()).get(backup.getLogType()).size()) {
             data.get(backup.getUuid()).get(backup.getLogType()).removeFirst();
