@@ -40,7 +40,7 @@ public class Commands {
         try {
             new AllBackupListGui(executor).open();
         } catch (Exception e) {
-            executor.sendMessage(Text.of(e.getMessage()));
+            InventoryBackup.LOGGER.error("Error listing backups", e);
         }
         return 0;
     }
@@ -52,29 +52,43 @@ public class Commands {
         try {
             new PlayerBackupListGui(target.getUuid(), target.getGameProfile().getName(), executor).open();
         } catch (Exception e) {
-            executor.sendMessage(Text.of(e.getMessage()));
+            InventoryBackup.LOGGER.error("Error listing backups for player {}",
+                    EntityArgumentType.getPlayer(context, "player").getName(), e);
         }
         return 0;
     }
 
 
     private static int forceBackupAll(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
-        ServerPlayerEntity executor = context.getSource().getPlayer();
-        for (ServerPlayerEntity player : executor.getServer().getPlayerManager().getPlayerList()) {
-            PlayerBackupData backupData = new PlayerBackupData(player, LogType.FORCE);
-            InventoryBackup.data.addBackup(backupData);
+        try {
+            ServerPlayerEntity executor = context.getSource().getPlayer();
+            assert executor != null;
+            for (ServerPlayerEntity player : executor.getServer().getPlayerManager().getPlayerList()) {
+                PlayerBackupData backupData = new PlayerBackupData(player, LogType.FORCE);
+                InventoryBackup.data.addBackup(backupData);
+            }
+            executor.sendMessage(Text.of("Backups created"));
         }
-        executor.sendMessage(Text.of("Backups created"));
+        catch (Exception e) {
+            InventoryBackup.LOGGER.error("Error creating backups for all players", e);
+        }
         return 0;
     }
 
 
     private static int forceBackupPlayer(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
-        ServerPlayerEntity executor = context.getSource().getPlayer();
-        ServerPlayerEntity target = EntityArgumentType.getPlayer(context, "player");
-        PlayerBackupData backupData = new PlayerBackupData(target, LogType.FORCE);
-        InventoryBackup.data.addBackup(backupData);
-        executor.sendMessage(Text.of("Backup created"));
+        try {
+            ServerPlayerEntity executor = context.getSource().getPlayer();
+            ServerPlayerEntity target = EntityArgumentType.getPlayer(context, "player");
+            PlayerBackupData backupData = new PlayerBackupData(target, LogType.FORCE);
+            InventoryBackup.data.addBackup(backupData);
+            assert executor != null;
+            executor.sendMessage(Text.of("Backup created"));
+        }
+        catch (Exception e) {
+            InventoryBackup.LOGGER.error("Error creating backup for player {}",
+                    EntityArgumentType.getPlayer(context, "player").getName(), e);
+        }
         return 0;
     }
 
