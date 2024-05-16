@@ -22,7 +22,7 @@ import java.util.List;
 
 public record GuiSlot(@Nullable GuiElementInterface element) {
 
-    static final GuiSlot EMPTY = GuiSlot.of(ItemStack.EMPTY);
+    static final GuiSlot EMPTY = GuiSlot.of(GuiElementBuilder.from(ItemStack.EMPTY));
 
 
     public static GuiSlot of(GuiElementBuilderInterface<?> element) {
@@ -30,8 +30,10 @@ public record GuiSlot(@Nullable GuiElementInterface element) {
     }
 
 
-    public static GuiSlot of(ItemStack baseStack) {
-        return of(GuiElementBuilder.from(baseStack));
+    public static GuiSlot output(ItemStack baseStack, ServerPlayerEntity player) {
+        return of(GuiElementBuilder.from(baseStack).setCallback((x, y, z) -> {
+            player.giveItemStack(baseStack.copy());
+        }));
     }
 
 

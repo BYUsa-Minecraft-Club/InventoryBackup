@@ -36,22 +36,22 @@ public class BackupGui extends PagedGui {
     @Override
     protected GuiSlot getElement(int id) {
         if(id < 4) {
-            return GuiSlot.of(playerBackupData.getArmor().get(3 - id)); //3 - id -> helmet first
+            return GuiSlot.output(playerBackupData.getArmor().get(3 - id), player); //3 - id -> helmet first
         }
         else if(id == 8) {
-            return GuiSlot.of(playerBackupData.getOffHand().getFirst());
+            return GuiSlot.output(playerBackupData.getOffHand().getFirst(), player);
         }
         else if(id < 9) {
             return GuiSlot.empty();
         }
         else if(id < 36) {
-            return GuiSlot.of(playerBackupData.getMain().get(id));
+            return GuiSlot.output(playerBackupData.getMain().get(id), player);
         }
         else if (id < 45) {
-            return GuiSlot.of(playerBackupData.getMain().get(id - 36));
+            return GuiSlot.output(playerBackupData.getMain().get(id - 36), player);
         }
         else if (id < 72) {
-            return GuiSlot.of(playerBackupData.getEnderChest().get(id - 45));
+            return GuiSlot.output(playerBackupData.getEnderChest().get(id - 45), player);
         }
         return GuiSlot.empty();
     }
