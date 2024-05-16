@@ -37,8 +37,7 @@ public class InventoryBackup implements ModInitializer {
 
         ServerEntityEvents.ENTITY_UNLOAD.register((entity, world) -> {
             if (entity instanceof ServerPlayerEntity player && player.getHealth() > 0 && !player.isDisconnected()) {
-                PlayerBackupData backupData =
-                        new PlayerBackupData(player, LogType.WORLD_CHANGE, System.currentTimeMillis());
+                PlayerBackupData backupData = new PlayerBackupData(player, LogType.WORLD_CHANGE);
                 InventoryBackup.data.addBackup(backupData);
             }
         });

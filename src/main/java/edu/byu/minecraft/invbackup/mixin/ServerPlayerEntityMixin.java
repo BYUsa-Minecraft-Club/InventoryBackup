@@ -17,8 +17,7 @@ public class ServerPlayerEntityMixin {
     public void injectOnDeath(DamageSource damageSource, CallbackInfo ci) {
         ServerPlayerEntity player = ((ServerPlayerEntity) (Object) this);
         String deathMessage = player.getDamageTracker().getDeathMessage().getString();
-        PlayerBackupData backupData =
-                new PlayerBackupData(player, LogType.DEATH, System.currentTimeMillis(), deathMessage);
+        PlayerBackupData backupData = new PlayerBackupData(player, LogType.DEATH, deathMessage);
         InventoryBackup.data.addBackup(backupData);
     }
 

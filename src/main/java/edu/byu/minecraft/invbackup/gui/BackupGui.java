@@ -1,7 +1,9 @@
 package edu.byu.minecraft.invbackup.gui;
 
 import edu.byu.minecraft.invbackup.data.PlayerBackupData;
+import eu.pb4.sgui.api.elements.GuiElementBuilder;
 import eu.pb4.sgui.api.gui.GuiInterface;
+import net.minecraft.item.Items;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 
@@ -58,11 +60,35 @@ public class BackupGui extends PagedGui {
     protected GuiSlot getNavElement(int id) {
         return switch (id) {
             case 0 -> GuiSlot.back(previousUi::open);
-            case 2 -> GuiSlot.previousPage(this);
+            case 2 -> viewInventory();
             case 4 -> GuiSlot.restore(Objects.requireNonNull(player.getServer()), playerBackupData);
-            case 6 -> GuiSlot.nextPage(this);
+            case 6 -> viewEnderChest();
             case 8 -> GuiSlot.teleport(player, playerBackupData.getWorld(), playerBackupData.getPos());
             default ->  GuiSlot.empty();
         };
+    }
+
+    public GuiSlot viewEnderChest() {
+        if (canNextPage()) {
+            GuiElementBuilder icon = GuiSlot.builder(Items.ENDER_CHEST, "View Ender Chest");
+            return GuiSlot.of(icon.setCallback((x, y, z) -> {
+                PagedGui.playClickSound(getPlayer());
+                nextPage();
+            }));
+        }
+        else return GuiSlot.EMPTY;
+    }
+
+
+    public GuiSlot viewInventory() {
+        if (canPreviousPage()) {
+            GuiElementBuilder icon = GuiSlot.builder(Items.PLAYER_HEAD, "View Inventory");
+            return GuiSlot.of(icon.setCallback((x, y, z) -> {
+                PagedGui.playClickSound(getPlayer());
+                previousPage();
+            }));
+        }
+        else return GuiSlot.EMPTY;
+
     }
 }

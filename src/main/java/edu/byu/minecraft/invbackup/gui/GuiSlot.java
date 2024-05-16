@@ -4,7 +4,6 @@ import edu.byu.minecraft.invbackup.data.PlayerBackupData;
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
 import eu.pb4.sgui.api.elements.GuiElementBuilderInterface;
 import eu.pb4.sgui.api.elements.GuiElementInterface;
-import net.minecraft.inventory.SimpleInventory;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.registry.RegistryKey;
@@ -15,7 +14,6 @@ import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.collection.DefaultedList;
 import net.minecraft.util.math.Vec3d;
 import org.jetbrains.annotations.Nullable;
 
@@ -24,7 +22,7 @@ import java.util.List;
 
 public record GuiSlot(@Nullable GuiElementInterface element) {
 
-    private static final GuiSlot EMPTY = GuiSlot.of(ItemStack.EMPTY);
+    static final GuiSlot EMPTY = GuiSlot.of(ItemStack.EMPTY);
 
 
     public static GuiSlot of(GuiElementBuilderInterface<?> element) {
@@ -62,7 +60,6 @@ public record GuiSlot(@Nullable GuiElementInterface element) {
 
 
     public static GuiSlot previousPage(PagedGui gui) {
-
         if (gui.canPreviousPage()) {
             return GuiSlot.of(Config.previousButton.setCallback((x, y, z) -> {
                 PagedGui.playClickSound(gui.getPlayer());

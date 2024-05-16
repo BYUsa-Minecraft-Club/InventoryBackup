@@ -1,6 +1,7 @@
 package edu.byu.minecraft.invbackup.data;
 
 
+import edu.byu.minecraft.InventoryBackup;
 import net.minecraft.entity.player.HungerManager;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.inventory.EnderChestInventory;
@@ -50,15 +51,15 @@ public class PlayerBackupData {
     private final String deathReason;
 
 
-    public PlayerBackupData(ServerPlayerEntity player, LogType logType, Long timestamp) {
-        this(player, logType, timestamp, null);
+    public PlayerBackupData(ServerPlayerEntity player, LogType logType) {
+        this(player, logType, null);
     }
 
 
-    public PlayerBackupData(ServerPlayerEntity player, LogType logType, Long timestamp, String deathReason) {
+    public PlayerBackupData(ServerPlayerEntity player, LogType logType, String deathReason) {
         this.uuid = player.getUuid();
         this.logType = logType;
-        this.timestamp = timestamp;
+        this.timestamp = System.currentTimeMillis();
         this.deathReason = deathReason;
 
         main = copy(player.getInventory().main);
@@ -138,6 +139,8 @@ public class PlayerBackupData {
     }
 
     public void restore(ServerPlayerEntity targetPlayer) {
+        InventoryBackup.data.addBackup(new PlayerBackupData(targetPlayer, LogType.FORCE));
+
         restore(main, targetPlayer.getInventory().main);
         restore(armor, targetPlayer.getInventory().armor);
         restore(offHand, targetPlayer.getInventory().offHand);

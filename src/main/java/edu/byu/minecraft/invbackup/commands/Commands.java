@@ -61,7 +61,7 @@ public class Commands {
     private static int forceBackupAll(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
         ServerPlayerEntity executor = context.getSource().getPlayer();
         for (ServerPlayerEntity player : executor.getServer().getPlayerManager().getPlayerList()) {
-            PlayerBackupData backupData = new PlayerBackupData(player, LogType.FORCE, System.currentTimeMillis());
+            PlayerBackupData backupData = new PlayerBackupData(player, LogType.FORCE);
             InventoryBackup.data.addBackup(backupData);
         }
         executor.sendMessage(Text.of("Backups created"));
@@ -72,7 +72,7 @@ public class Commands {
     private static int forceBackupPlayer(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
         ServerPlayerEntity executor = context.getSource().getPlayer();
         ServerPlayerEntity target = EntityArgumentType.getPlayer(context, "player");
-        PlayerBackupData backupData = new PlayerBackupData(target, LogType.FORCE, System.currentTimeMillis());
+        PlayerBackupData backupData = new PlayerBackupData(target, LogType.FORCE);
         InventoryBackup.data.addBackup(backupData);
         executor.sendMessage(Text.of("Backup created"));
         return 0;
