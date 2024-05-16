@@ -1,11 +1,20 @@
 # Usage
-/invbackup view <i>world Username number</i>
-Replaces runners inventory with target's saved inventory
+> /invbackup restore
+
+Opens a GUI with an alphabetically sorted list of available players. Select a player's head to view their available backups
+
+> /invbackup restore `PlayerName`
+
+Requires player with name `PlayerName` to be online. Opens a GUI displaying player's backups
 
 
-/invbackup restore <i>world Username number</i>
-Replaces targets inventory with target's saved inventory
+> /invbackup forcebackup
 
-ex. /invbackup view minecraft:overworld TransientChicken 1
+Creates a backup for all online players
 
-each world saves up to 5 (currently, could change this) inventories per player
+> /invbackup forcebackup `PlayerName`
+
+Requires player with name `PlayerName` to be online. Creates a backup for player
+
+
+Currently there is a maximum of 10 backups of each type. If this limit is reached, old backups are deleted.
