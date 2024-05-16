@@ -35,7 +35,7 @@ public class PlayerBackupListGui extends PagedGui {
         if (id < this.types.size()) {
             LogType logType = types.get(id);
 
-            var element = GuiSlot.builder(Items.CHEST, logType.name())
+            var element = GuiSlot.builder(TypedBackupListGui.logTypeItem(logType), logType.name())
                     .setCallback((index, type, action) -> new TypedBackupListGui(targetUUID, playerName, logType, player).open());
 
             return GuiSlot.of(element);

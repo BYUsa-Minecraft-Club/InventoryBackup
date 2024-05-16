@@ -52,14 +52,8 @@ public class TypedBackupListGui extends PagedGui {
                     String.format("Location: %d %d %d", Math.round(backupData.getPos().getX()),
                             Math.round(backupData.getPos().getY()), Math.round(backupData.getPos().getZ())),
                     (backupData.getDeathReason() == null) ? "" : backupData.getDeathReason()};
-            Item displayItem = switch (backupData.getLogType()) {
-                case JOIN -> Items.GREEN_BED;
-                case QUIT -> Items.FIREWORK_ROCKET;
-                case DEATH -> Items.IRON_SWORD;
-                case WORLD_CHANGE -> Items.END_PORTAL_FRAME;
-                case FORCE -> Items.STRUCTURE_VOID;
-            };
 
+            Item displayItem = logTypeItem(backupData.getLogType());
             var element = GuiSlot.builder(displayItem, title).setCallback(
                     (index, type, action) -> new BackupGui(targetUUID, playerName, backupData, this, player).open());
 
@@ -104,6 +98,16 @@ public class TypedBackupListGui extends PagedGui {
         }
         ret.sort(Comparator.comparing(PlayerBackupData::getTimestamp));
         return ret;
+    }
+
+    static Item logTypeItem(LogType type) {
+        return switch (type) {
+            case JOIN -> Items.GREEN_BED;
+            case QUIT -> Items.FIREWORK_ROCKET;
+            case DEATH -> Items.IRON_SWORD;
+            case WORLD_CHANGE -> Items.END_PORTAL_FRAME;
+            case FORCE -> Items.STRUCTURE_VOID;
+        };
     }
 
 }
