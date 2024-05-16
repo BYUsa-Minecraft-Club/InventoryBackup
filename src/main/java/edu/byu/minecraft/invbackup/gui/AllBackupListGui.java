@@ -1,14 +1,16 @@
 package edu.byu.minecraft.invbackup.gui;
 
+import com.mojang.authlib.GameProfile;
 import edu.byu.minecraft.InventoryBackup;
+import eu.pb4.sgui.api.elements.GuiElementBuilder;
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.ProfileComponent;
+import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 public class AllBackupListGui extends PagedGui {
     private int ticker = 0;
@@ -33,8 +35,16 @@ public class AllBackupListGui extends PagedGui {
         if (id < this.players.size()) {
             Map.Entry<UUID, String> playerData = players.get(id);
 
-            var element = GuiSlot.builder(Items.CHEST, playerData.getValue())
-                    .setCallback((index, type, action) -> new PlayerBackupListGui(playerData.getKey(), playerData.getValue(), player).open());
+            ItemStack playerHead = Items.PLAYER_HEAD.getDefaultStack();
+            GameProfile profile = new GameProfile(playerData.getKey(), playerData.getValue());
+            ProfileComponent pc = new ProfileComponent(Optional.empty(), Optional.of(playerData.getKey()),
+                    profile.getProperties());
+            playerHead.set(DataComponentTypes.PROFILE, pc);
+
+            GuiElementBuilder element = GuiElementBuilder.from(playerHead)
+                    .setName(Text.of(playerData.getValue()))
+                    .setCallback((index, type, action) -> new PlayerBackupListGui(playerData.getKey(),
+                    playerData.getValue(), player).open());
 
             return GuiSlot.of(element);
         }
