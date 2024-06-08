@@ -1,6 +1,8 @@
 package edu.byu.minecraft.invbackup.gui;
 
+import edu.byu.minecraft.InventoryBackup;
 import edu.byu.minecraft.invbackup.data.PlayerBackupData;
+import edu.byu.minecraft.invbackup.mixin.PlayerManagerAccessor;
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
 import eu.pb4.sgui.api.elements.GuiElementBuilderInterface;
 import eu.pb4.sgui.api.elements.GuiElementInterface;
@@ -10,6 +12,7 @@ import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.screen.slot.Slot;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.PlayerManager;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundEvents;
@@ -20,6 +23,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public record GuiSlot(@Nullable GuiElementInterface element, @Nullable Slot slot) {
 
@@ -103,9 +107,16 @@ public record GuiSlot(@Nullable GuiElementInterface element, @Nullable Slot slot
 
 
     public static GuiSlot restore(MinecraftServer server, PlayerBackupData data) {
-        ServerPlayerEntity targetPlayer = server.getPlayerManager().getPlayer(data.getUuid());
-        if (targetPlayer == null) return GuiSlot.of(Config.restoreOfflineButton);
-        else return GuiSlot.of(Config.restoreButton.setCallback(() -> data.restore(targetPlayer)));
+        String playerName = InventoryBackup.data.getPlayers().get(data.getUuid());
+        if(playerName == null) return GuiSlot.empty();
+        return GuiSlot.of(Config.restoreButton.setCallback(() -> {
+            ServerPlayerEntity target = InventoryBackup.getPlayer(playerName, server);
+            data.restore(target);
+            PlayerManager pm = server.getPlayerManager();
+            if(!pm.getPlayerList().contains(target)) {
+                ((PlayerManagerAccessor) pm).callSavePlayerData(target);
+            }
+        }));
     }
 
 }

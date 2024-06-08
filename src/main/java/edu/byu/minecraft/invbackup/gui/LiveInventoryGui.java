@@ -7,6 +7,7 @@ import eu.pb4.sgui.api.elements.GuiElementBuilder;
 import eu.pb4.sgui.api.gui.GuiInterface;
 import net.minecraft.item.Items;
 import net.minecraft.screen.slot.Slot;
+import net.minecraft.server.PlayerManager;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 
@@ -95,7 +96,7 @@ public class LiveInventoryGui extends PagedGui {
     @Override
     public void onClose() {
         super.onClose();
-        var pm = Objects.requireNonNull(player.getServer()).getPlayerManager();
+        PlayerManager pm = Objects.requireNonNull(player.getServer()).getPlayerManager();
         if(!pm.getPlayerList().contains(target)) {
             ((PlayerManagerAccessor) pm).callSavePlayerData(target);
         }
