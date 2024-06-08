@@ -11,7 +11,9 @@ public class Config {
 
     public static GuiElementBuilder backButton = GuiSlot.builder(Items.BARRIER, "Previous Menu");
 
-    public static GuiElementBuilder teleportButton = GuiSlot.builder(Items.ENDER_PEARL, "Teleport to Event");
+    public static GuiElementBuilder teleportButton(String target) {
+        return GuiSlot.builder(Items.ENDER_PEARL, "Teleport to " + target);
+    }
 
     public static GuiElementBuilder restoreButton = GuiSlot.builder(Items.LIME_DYE, "Restore Inventory");
 

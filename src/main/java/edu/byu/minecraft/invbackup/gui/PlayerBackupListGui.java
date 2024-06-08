@@ -40,7 +40,11 @@ public class PlayerBackupListGui extends PagedGui {
 
             return GuiSlot.of(element);
         }
-        else if (id == this.types.size()) {
+        else if (id == 9) {
+            return GuiSlot.of(GuiSlot.builder(GuiUtils.getPlayerHead(targetUUID, playerName), "LIVE")
+                    .setCallback((index, type, action) -> new LiveInventoryGui(playerName, this, player).open()));
+        }
+        else if (id == 10) {
             var element = GuiSlot.builder(Items.CHEST, "ALL")
                     .setCallback((index, type, action) -> new TypedBackupListGui(targetUUID, playerName, null, player).open());
 

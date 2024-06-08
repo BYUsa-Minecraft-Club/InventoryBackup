@@ -1,6 +1,8 @@
 package edu.byu.minecraft.invbackup.commands;
 
+import com.mojang.authlib.GameProfile;
 import com.mojang.brigadier.CommandDispatcher;
+import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import edu.byu.minecraft.InventoryBackup;
@@ -8,14 +10,22 @@ import edu.byu.minecraft.invbackup.data.LogType;
 import edu.byu.minecraft.invbackup.data.PlayerBackupData;
 import edu.byu.minecraft.invbackup.gui.AllBackupListGui;
 import edu.byu.minecraft.invbackup.gui.PlayerBackupListGui;
+import edu.byu.minecraft.invbackup.mixin.PlayerManagerAccessor;
 import me.lucko.fabric.api.permissions.v0.Permissions;
 import net.minecraft.command.CommandRegistryAccess;
 import net.minecraft.command.argument.EntityArgumentType;
+import net.minecraft.nbt.NbtCompound;
+import net.minecraft.network.packet.c2s.common.SyncedClientOptions;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.CommandManager.RegistrationEnvironment;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.UUID;
 import java.util.function.Predicate;
 
 import static net.minecraft.server.command.CommandManager.argument;
@@ -29,7 +39,9 @@ public class Commands {
         dispatcher.register(literal("invbackup").requires(Permissions.require("inventorybackup", 3)
                         .and(((Predicate<ServerCommandSource>) ServerCommandSource::isExecutedByPlayer)))
                 .then(literal("restore").executes(Commands::listAll)
-                        .then(argument("player", EntityArgumentType.player()).executes(Commands::listPlayer)))
+                        .then(argument("player", StringArgumentType.word())
+                                .suggests(SuggestionProviders::allPlayers)
+                                .executes(Commands::listPlayer)))
                 .then(literal("forcebackup").executes(Commands::forceBackupAll)
                         .then(argument("player", EntityArgumentType.player()).executes(Commands::forceBackupPlayer))));
     }
@@ -48,7 +60,7 @@ public class Commands {
 
     private static int listPlayer(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
         ServerPlayerEntity executor = context.getSource().getPlayer();
-        ServerPlayerEntity target = EntityArgumentType.getPlayer(context, "player");
+        ServerPlayerEntity target = getPlayer(context);
         try {
             new PlayerBackupListGui(target.getUuid(), target.getGameProfile().getName(), executor).open();
         } catch (Exception e) {
@@ -90,6 +102,12 @@ public class Commands {
                     EntityArgumentType.getPlayer(context, "player").getName(), e);
         }
         return 0;
+    }
+
+    public static ServerPlayerEntity getPlayer(CommandContext<ServerCommandSource> context) {
+        String playerName = StringArgumentType.getString(context, "player");
+        MinecraftServer server = context.getSource().getServer();
+        return InventoryBackup.getPlayer(playerName, server);
     }
 
 

@@ -34,13 +34,7 @@ public class AllBackupListGui extends PagedGui {
     protected GuiSlot getElement(int id) {
         if (id < this.players.size()) {
             Map.Entry<UUID, String> playerData = players.get(id);
-
-            ItemStack playerHead = Items.PLAYER_HEAD.getDefaultStack();
-            GameProfile profile = new GameProfile(playerData.getKey(), playerData.getValue());
-            ProfileComponent pc = new ProfileComponent(Optional.empty(), Optional.of(playerData.getKey()),
-                    profile.getProperties());
-            playerHead.set(DataComponentTypes.PROFILE, pc);
-
+            ItemStack playerHead = GuiUtils.getPlayerHead(playerData.getKey(), playerData.getValue());
             GuiElementBuilder element = GuiElementBuilder.from(playerHead)
                     .setName(Text.of(playerData.getValue()))
                     .setCallback((index, type, action) -> new PlayerBackupListGui(playerData.getKey(),

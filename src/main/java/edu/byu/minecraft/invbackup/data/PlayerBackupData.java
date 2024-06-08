@@ -7,6 +7,7 @@ import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.inventory.EnderChestInventory;
 import net.minecraft.inventory.Inventories;
 import net.minecraft.inventory.SimpleInventory;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtList;
@@ -24,13 +25,13 @@ public class PlayerBackupData {
 
     private final Long timestamp;
 
-    private final DefaultedList<ItemStack> main;
+    private final SimpleInventory main;
 
-    private final DefaultedList<ItemStack> armor;
+    private final SimpleInventory armor;
 
-    private final DefaultedList<ItemStack> offHand;
+    private final SimpleInventory offHand;
 
-    private final DefaultedList<ItemStack> enderChest;
+    private final SimpleInventory enderChest;
 
     private final int experienceLevel;
 
@@ -85,14 +86,15 @@ public class PlayerBackupData {
         uuid = nbt.getUuid("uuid");
         timestamp = nbt.getLong("timestamp");
 
-        main = DefaultedList.ofSize(PlayerInventory.MAIN_SIZE, ItemStack.EMPTY);
-        armor = DefaultedList.ofSize(PlayerInventory.ARMOR_SLOTS.length, ItemStack.EMPTY);
-        offHand = DefaultedList.ofSize(1, ItemStack.EMPTY);
-        enderChest = DefaultedList.ofSize(27, ItemStack.EMPTY);
-        Inventories.readNbt((NbtCompound) nbt.get("main"), main, lookup);
-        Inventories.readNbt((NbtCompound) nbt.get("armor"), armor, lookup);
-        Inventories.readNbt((NbtCompound) nbt.get("offHand"), offHand, lookup);
-        Inventories.readNbt((NbtCompound) nbt.get("enderChest"), enderChest, lookup);
+        main = new SimpleInventory(PlayerInventory.MAIN_SIZE);
+        armor = new SimpleInventory(PlayerInventory.ARMOR_SLOTS.length);
+        offHand = new SimpleInventory(1);
+        enderChest = new SimpleInventory(27);
+
+        main.readNbtList((NbtList) nbt.get("main"), lookup);
+        armor.readNbtList((NbtList) nbt.get("armor"), lookup);
+        offHand.readNbtList((NbtList) nbt.get("offHand"), lookup);
+        enderChest.readNbtList((NbtList) nbt.get("enderChest"), lookup);
 
         experienceLevel = nbt.getInt("experienceLevel");
         totalExperience = nbt.getInt("totalExperience");
@@ -114,10 +116,10 @@ public class PlayerBackupData {
         nbtCompound.putUuid("uuid", uuid);
         nbtCompound.putLong("timestamp", timestamp);
 
-        nbtCompound.put("main", Inventories.writeNbt(new NbtCompound(), main, lookup));
-        nbtCompound.put("armor", Inventories.writeNbt(new NbtCompound(), armor, lookup));
-        nbtCompound.put("offHand", Inventories.writeNbt(new NbtCompound(), offHand, lookup));
-        nbtCompound.put("enderChest", Inventories.writeNbt(new NbtCompound(), enderChest, lookup));
+        nbtCompound.put("main", main.toNbtList(lookup));
+        nbtCompound.put("armor", armor.toNbtList(lookup));
+        nbtCompound.put("offHand", offHand.toNbtList(lookup));
+        nbtCompound.put("enderChest", enderChest.toNbtList(lookup));
 
         nbtCompound.putInt("experienceLevel", experienceLevel);
         nbtCompound.putInt("totalExperience", totalExperience);
@@ -150,17 +152,17 @@ public class PlayerBackupData {
         targetPlayer.setExperiencePoints((int) (experienceProgress * targetPlayer.getNextLevelExperience()));
     }
 
-    private DefaultedList<ItemStack> copy(DefaultedList<ItemStack> stacks) {
-        DefaultedList<ItemStack> list = DefaultedList.ofSize(stacks.size(), ItemStack.EMPTY);
+    private SimpleInventory copy(DefaultedList<ItemStack> stacks) {
+        SimpleInventory inventory = new SimpleInventory(stacks.size());
         for (int i = 0; i < stacks.size(); i++) {
-            list.set(i, stacks.get(i).copy());
+            inventory.setStack(i, stacks.get(i).copy());
         }
-        return list;
+        return inventory;
     }
 
-    private void restore(DefaultedList<ItemStack> source, DefaultedList<ItemStack> target) {
+    private void restore(SimpleInventory source, DefaultedList<ItemStack> target) {
         for (int i = 0; i < source.size(); i++) {
-            target.set(i, source.get(i).copy());
+            target.set(i, source.getHeldStacks().get(i).copy());
         }
     }
 
@@ -175,19 +177,19 @@ public class PlayerBackupData {
     }
 
 
-    public DefaultedList<ItemStack> getMain() {
+    public SimpleInventory getMain() {
         return main;
     }
 
-    public DefaultedList<ItemStack>  getArmor() {
+    public SimpleInventory  getArmor() {
         return armor;
     }
 
-    public DefaultedList<ItemStack>  getOffHand() {
+    public SimpleInventory  getOffHand() {
         return offHand;
     }
 
-    public DefaultedList<ItemStack>  getEnderChest() {
+    public SimpleInventory  getEnderChest() {
         return enderChest;
     }
 

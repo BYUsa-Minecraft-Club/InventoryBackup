@@ -1,5 +1,9 @@
 package edu.byu.minecraft;
 
+import com.mojang.authlib.GameProfile;
+import com.mojang.brigadier.arguments.StringArgumentType;
+import com.mojang.brigadier.context.CommandContext;
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import edu.byu.minecraft.invbackup.commands.Commands;
 import edu.byu.minecraft.invbackup.data.LogType;
 import edu.byu.minecraft.invbackup.data.PlayerBackupData;
@@ -9,11 +13,18 @@ import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.minecraft.entity.Entity;
+import net.minecraft.nbt.NbtCompound;
+import net.minecraft.network.packet.c2s.common.SyncedClientOptions;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
 
 public class InventoryBackup implements ModInitializer {
 
@@ -60,6 +71,36 @@ public class InventoryBackup implements ModInitializer {
             case WORLD_CHANGE -> InventoryBackup.MAX_SAVES_WORLD_CHANGE;
             case FORCE -> InventoryBackup.MAX_SAVES_FORCE;
         };
+    }
+
+    public static ServerPlayerEntity getPlayer(String playerName, MinecraftServer server) {
+        ServerPlayerEntity requestedPlayer = server.getPlayerManager().getPlayer(playerName);
+
+        if (requestedPlayer == null) {
+            UUID uuid = InventoryBackup.data.getPlayers().entrySet().stream()
+                    .filter(entry -> playerName.equals(entry.getValue()))
+                    .findAny().map(Map.Entry::getKey).orElse(null);
+            if(uuid == null) {
+                throw new RuntimeException("Cannot find player with name " + playerName);
+            }
+            GameProfile profile = new GameProfile(uuid, playerName);
+            requestedPlayer = server.getPlayerManager().createPlayer(profile, SyncedClientOptions.createDefault());
+            Optional<NbtCompound> compoundOpt = server.getPlayerManager().loadPlayerData(requestedPlayer);
+//            if (compoundOpt.isPresent()) {
+//                NbtCompound compound = compoundOpt.get();
+//                if (compound.contains("Dimension")) {
+//                    ServerWorld world = server.getWorld(
+//                            DimensionType.worldFromDimensionNbt(new Dynamic<>(NbtOps.INSTANCE, compound.get("Dimension")))
+//                                    .result().orElse(null));
+//
+//                    if (world != null) {
+//                        ((EntityAccessor) requestedPlayer).callSetWorld(world);
+//                    }
+//                }
+//            }
+        }
+
+        return requestedPlayer;
     }
 
 }

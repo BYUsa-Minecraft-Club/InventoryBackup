@@ -8,6 +8,7 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.RegistryKeys;
+import net.minecraft.screen.slot.Slot;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
@@ -20,24 +21,24 @@ import org.jetbrains.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
-public record GuiSlot(@Nullable GuiElementInterface element) {
+public record GuiSlot(@Nullable GuiElementInterface element, @Nullable Slot slot) {
 
     static final GuiSlot EMPTY = GuiSlot.of(GuiElementBuilder.from(ItemStack.EMPTY));
 
 
     public static GuiSlot of(GuiElementBuilderInterface<?> element) {
-        return new GuiSlot(element.build());
+        return new GuiSlot(element.build(), null);
     }
 
-
-    public static GuiSlot output(ItemStack baseStack, ServerPlayerEntity player) {
-        return of(GuiElementBuilder.from(baseStack).setCallback((x, y, z) -> {
-            player.giveItemStack(baseStack.copy());
-        }));
+    public static GuiSlot of(Slot slot) {
+        return new GuiSlot(null, slot);
     }
-
 
     public static GuiElementBuilder builder(Item base, String... text) {
+        return builder(base.getDefaultStack(), text);
+    }
+
+    public static GuiElementBuilder builder(ItemStack stack, String... text) {
         List<Text> list = new ArrayList<>();
         for (String s : text) {
             list.add(Text.of(s));
@@ -45,7 +46,7 @@ public record GuiSlot(@Nullable GuiElementInterface element) {
         if (list.isEmpty()) {
             list.add(Text.empty());
         }
-        return GuiElementBuilder.from(base.getDefaultStack()).setName(list.removeFirst()).setLore(list).hideDefaultTooltip();
+        return GuiElementBuilder.from(stack).setName(list.removeFirst()).setLore(list).hideDefaultTooltip();
     }
 
 
@@ -86,8 +87,8 @@ public record GuiSlot(@Nullable GuiElementInterface element) {
     }
 
 
-    public static GuiSlot teleport(ServerPlayerEntity player, Identifier world, Vec3d pos) {
-        return GuiSlot.of(Config.teleportButton.setCallback(() -> {
+    public static GuiSlot teleport(ServerPlayerEntity player, Identifier world, Vec3d pos, String target) {
+        return GuiSlot.of(Config.teleportButton(target).setCallback(() -> {
             PagedGui.playClickSound(player);
             MinecraftServer server = player.getServer();
             if (server == null) return;
