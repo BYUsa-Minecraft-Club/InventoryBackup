@@ -5,6 +5,8 @@ import edu.byu.minecraft.invbackup.data.PlayerBackupData;
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
 import eu.pb4.sgui.api.elements.GuiElementInterface;
 import eu.pb4.sgui.api.gui.GuiInterface;
+import net.minecraft.inventory.SimpleInventory;
+import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.screen.slot.Slot;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -39,22 +41,27 @@ public class BackupGui extends PagedGui {
     @Override
     protected GuiSlot getElement(int id) {
         if(id < 4) {
-            return GuiSlot.of(new Slot(playerBackupData.getArmor(), 3 - id, 0, 0)); //3 - id -> helmet first
+            return GuiSlot.of(new Slot(PlayerBackupData.copy(playerBackupData.getArmor().getHeldStacks()),
+                    3 - id, 0, 0)); //3 - id -> helmet first
         }
         else if(id == 8) {
-            return GuiSlot.of(new Slot(playerBackupData.getOffHand(), 0, 0, 0));
+            return GuiSlot.of(new Slot(PlayerBackupData.copy(playerBackupData.getOffHand().getHeldStacks()),
+                    0, 0, 0));
         }
         else if(id < 9) {
             return GuiSlot.empty();
         }
         else if(id < 36) {
-            return GuiSlot.of(new Slot(playerBackupData.getMain(), id, 0, 0));
+            return GuiSlot.of(new Slot(PlayerBackupData.copy(playerBackupData.getMain().getHeldStacks())
+                    , id, 0, 0));
         }
         else if (id < 45) {
-            return GuiSlot.of(new Slot(playerBackupData.getMain(), id - 36, 0, 0));
+            return GuiSlot.of(new Slot(PlayerBackupData.copy(playerBackupData.getMain().getHeldStacks()),
+                    id - 36, 0, 0));
         }
         else if (id < 72) {
-            return GuiSlot.of(new Slot(playerBackupData.getEnderChest(), id - 45, 0, 0));
+            return GuiSlot.of(new Slot(PlayerBackupData.copy(playerBackupData.getEnderChest().getHeldStacks()),
+                    id - 45, 0, 0));
         }
         return GuiSlot.empty();
     }

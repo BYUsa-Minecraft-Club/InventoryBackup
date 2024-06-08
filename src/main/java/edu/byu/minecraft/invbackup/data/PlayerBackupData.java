@@ -152,7 +152,7 @@ public class PlayerBackupData {
         targetPlayer.setExperiencePoints((int) (experienceProgress * targetPlayer.getNextLevelExperience()));
     }
 
-    private SimpleInventory copy(DefaultedList<ItemStack> stacks) {
+    public static SimpleInventory copy(DefaultedList<ItemStack> stacks) {
         SimpleInventory inventory = new SimpleInventory(stacks.size());
         for (int i = 0; i < stacks.size(); i++) {
             inventory.setStack(i, stacks.get(i).copy());

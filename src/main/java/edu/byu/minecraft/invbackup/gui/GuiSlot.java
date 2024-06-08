@@ -112,10 +112,7 @@ public record GuiSlot(@Nullable GuiElementInterface element, @Nullable Slot slot
         return GuiSlot.of(Config.restoreButton.setCallback(() -> {
             ServerPlayerEntity target = InventoryBackup.getPlayer(playerName, server);
             data.restore(target);
-            PlayerManager pm = server.getPlayerManager();
-            if(!pm.getPlayerList().contains(target)) {
-                ((PlayerManagerAccessor) pm).callSavePlayerData(target);
-            }
+            InventoryBackup.savePlayerData(target);
         }));
     }
 

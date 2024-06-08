@@ -61,7 +61,10 @@ public class LiveInventoryGui extends PagedGui {
     @Override
     protected GuiSlot getNavElement(int id) {
         return switch (id) {
-            case 0 -> GuiSlot.back(previousUi::open);
+            case 0 -> GuiSlot.back(() -> {
+                InventoryBackup.savePlayerData(target);
+                previousUi.open();
+            });
             case 2 -> viewInventory();
             case 6 -> viewEnderChest();
             case 8 -> GuiSlot.teleport(player, player.getWorld().getRegistryKey().getValue(), player.getPos(), "Player");
@@ -96,9 +99,6 @@ public class LiveInventoryGui extends PagedGui {
     @Override
     public void onClose() {
         super.onClose();
-        PlayerManager pm = Objects.requireNonNull(player.getServer()).getPlayerManager();
-        if(!pm.getPlayerList().contains(target)) {
-            ((PlayerManagerAccessor) pm).callSavePlayerData(target);
-        }
+        InventoryBackup.savePlayerData(target);
     }
 }
