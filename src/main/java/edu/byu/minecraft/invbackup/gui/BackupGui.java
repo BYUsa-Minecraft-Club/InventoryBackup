@@ -26,7 +26,7 @@ public class BackupGui extends PagedGui {
         super(player);
         this.targetUUID = uuid;
         this.playerName = playerName;
-        this.playerBackupData = playerBackupData;
+        this.playerBackupData = new PlayerBackupData(playerBackupData);
         this.setTitle(Text.of(String.format("%s's, %s backup", playerName, playerBackupData.getLogType())));
         this.previousUi = previousUi;
         this.updateDisplay();
@@ -41,27 +41,22 @@ public class BackupGui extends PagedGui {
     @Override
     protected GuiSlot getElement(int id) {
         if(id < 4) {
-            return GuiSlot.of(new Slot(PlayerBackupData.copy(playerBackupData.getArmor().getHeldStacks()),
-                    3 - id, 0, 0)); //3 - id -> helmet first
+            return GuiSlot.of(new Slot(playerBackupData.getArmor(), 3 - id, 0, 0)); //3 - id -> helmet first
         }
         else if(id == 8) {
-            return GuiSlot.of(new Slot(PlayerBackupData.copy(playerBackupData.getOffHand().getHeldStacks()),
-                    0, 0, 0));
+            return GuiSlot.of(new Slot(playerBackupData.getOffHand(), 0, 0, 0));
         }
         else if(id < 9) {
             return GuiSlot.empty();
         }
         else if(id < 36) {
-            return GuiSlot.of(new Slot(PlayerBackupData.copy(playerBackupData.getMain().getHeldStacks())
-                    , id, 0, 0));
+            return GuiSlot.of(new Slot(playerBackupData.getMain(), id, 0, 0));
         }
         else if (id < 45) {
-            return GuiSlot.of(new Slot(PlayerBackupData.copy(playerBackupData.getMain().getHeldStacks()),
-                    id - 36, 0, 0));
+            return GuiSlot.of(new Slot(playerBackupData.getMain(), id - 36, 0, 0));
         }
         else if (id < 72) {
-            return GuiSlot.of(new Slot(PlayerBackupData.copy(playerBackupData.getEnderChest().getHeldStacks()),
-                    id - 45, 0, 0));
+            return GuiSlot.of(new Slot(playerBackupData.getEnderChest(), id - 45, 0, 0));
         }
         return GuiSlot.empty();
     }

@@ -110,6 +110,24 @@ public class PlayerBackupData {
         deathReason = (nbt.contains("deathReason")) ? nbt.getString("deathReason") : null;
     }
 
+    public PlayerBackupData(PlayerBackupData copy) {
+        uuid = copy.uuid;
+        timestamp = copy.timestamp;
+        main = copy(copy.main.getHeldStacks());
+        armor = copy(copy.armor.getHeldStacks());
+        offHand = copy(copy.offHand.getHeldStacks());
+        enderChest = copy(copy.enderChest.getHeldStacks());
+        experienceLevel = copy.experienceLevel;
+        totalExperience = copy.totalExperience;
+        experienceProgress = copy.experienceProgress;
+        health = copy.health;
+        hungerManager = copy.hungerManager;
+        world = copy.world;
+        pos = copy.pos;
+        logType = copy.logType;
+        deathReason = copy.deathReason;
+    }
+
     public NbtCompound toNbt(RegistryWrapper.WrapperLookup lookup) {
         NbtCompound nbtCompound = new NbtCompound();
 
@@ -152,7 +170,7 @@ public class PlayerBackupData {
         targetPlayer.setExperiencePoints((int) (experienceProgress * targetPlayer.getNextLevelExperience()));
     }
 
-    public static SimpleInventory copy(DefaultedList<ItemStack> stacks) {
+    private SimpleInventory copy(DefaultedList<ItemStack> stacks) {
         SimpleInventory inventory = new SimpleInventory(stacks.size());
         for (int i = 0; i < stacks.size(); i++) {
             inventory.setStack(i, stacks.get(i).copy());
