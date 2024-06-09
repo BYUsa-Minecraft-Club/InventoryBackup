@@ -30,7 +30,7 @@ public class TypedBackupListGui extends PagedGui {
         this.playerName = playerName;
         this.logType = logType;
         String logTypeStr = (logType == null) ? "ALL" : logType.name();
-        this.setTitle(Text.of(String.format("%s's, %s backups", playerName, logTypeStr)));
+        this.setTitle(Text.of(String.format("%s's %s backups", playerName, logTypeStr)));
         this.data = getData();
         this.updateDisplay();
     }

@@ -23,7 +23,7 @@ public class LiveInventoryGui extends PagedGui {
     public LiveInventoryGui(String playerName, GuiInterface previousUi, ServerPlayerEntity player) {
         super(player);
         this.playerName = playerName;
-        this.setTitle(Text.of(String.format("%s's, live inventory", playerName)));
+        this.setTitle(Text.of(String.format("%s's live inventory", playerName)));
         this.previousUi = previousUi;
         this.target = InventoryBackup.getPlayer(playerName, Objects.requireNonNull(player.getServer()));
         this.updateDisplay();

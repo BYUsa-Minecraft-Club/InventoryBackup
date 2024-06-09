@@ -27,7 +27,7 @@ public class BackupGui extends PagedGui {
         this.targetUUID = uuid;
         this.playerName = playerName;
         this.playerBackupData = new PlayerBackupData(playerBackupData);
-        this.setTitle(Text.of(String.format("%s's, %s backup", playerName, playerBackupData.getLogType())));
+        this.setTitle(Text.of(String.format("%s's %s backup", playerName, playerBackupData.getLogType())));
         this.previousUi = previousUi;
         this.updateDisplay();
     }
