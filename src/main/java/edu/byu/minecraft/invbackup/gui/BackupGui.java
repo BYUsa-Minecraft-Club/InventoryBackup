@@ -92,7 +92,7 @@ public class BackupGui extends PagedGui {
 
     public GuiSlot viewInventory() {
         if (canPreviousPage()) {
-            GuiElementBuilder icon = GuiSlot.builder(Items.PLAYER_HEAD, "View Inventory");
+            GuiElementBuilder icon = GuiSlot.builder(GuiUtils.getPlayerHead(targetUUID, playerName), "View Inventory");
             return GuiSlot.of(icon.setCallback((x, y, z) -> {
                 PagedGui.playClickSound(getPlayer());
                 previousPage();
