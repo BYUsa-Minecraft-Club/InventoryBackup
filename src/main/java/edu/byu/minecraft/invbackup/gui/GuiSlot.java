@@ -100,7 +100,7 @@ public record GuiSlot(@Nullable GuiElementInterface element, @Nullable Slot slot
             if (toWorld == null) return;
 
             player.teleport(toWorld, pos.getX(), pos.getY(), pos.getZ(), 0, 0);
-            player.teleport(pos.getX(), pos.getY(), pos.getZ());
+            player.teleport(pos.getX(), pos.getY(), pos.getZ(), false);
             PagedGui.playClickSound(player, SoundEvents.ITEM_CHORUS_FRUIT_TELEPORT);
         }));
     }
