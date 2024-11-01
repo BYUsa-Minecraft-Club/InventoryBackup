@@ -87,7 +87,7 @@ public class PlayerBackupData {
         timestamp = nbt.getLong("timestamp");
 
         main = new SimpleInventory(PlayerInventory.MAIN_SIZE);
-        armor = new SimpleInventory(PlayerInventory.ARMOR_SLOTS.length);
+        armor = new SimpleInventory(4);
         offHand = new SimpleInventory(1);
         enderChest = new SimpleInventory(27);
 

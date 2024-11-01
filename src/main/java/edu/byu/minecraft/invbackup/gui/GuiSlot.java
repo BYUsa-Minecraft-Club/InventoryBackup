@@ -8,6 +8,7 @@ import eu.pb4.sgui.api.elements.GuiElementBuilderInterface;
 import eu.pb4.sgui.api.elements.GuiElementInterface;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.network.packet.s2c.play.PositionFlag;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.screen.slot.Slot;
@@ -24,6 +25,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 public record GuiSlot(@Nullable GuiElementInterface element, @Nullable Slot slot) {
 
@@ -99,7 +101,7 @@ public record GuiSlot(@Nullable GuiElementInterface element, @Nullable Slot slot
             ServerWorld toWorld = server.getWorld(RegistryKey.of(RegistryKeys.WORLD, world));
             if (toWorld == null) return;
 
-            player.teleport(toWorld, pos.getX(), pos.getY(), pos.getZ(), 0, 0);
+            player.teleport(toWorld, pos.getX(), pos.getY(), pos.getZ(), PositionFlag.DELTA, 0, 0, false);
             player.teleport(pos.getX(), pos.getY(), pos.getZ(), false);
             PagedGui.playClickSound(player, SoundEvents.ITEM_CHORUS_FRUIT_TELEPORT);
         }));

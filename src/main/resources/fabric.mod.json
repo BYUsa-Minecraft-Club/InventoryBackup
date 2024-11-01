@@ -21,8 +21,8 @@
 	},
 	"mixins": ["invbackup.mixins.json"],
 	"depends": {
-		"fabricloader": ">=0.14.24",
-		"minecraft": "~1.21",
+		"fabricloader": ">=0.16.2",
+		"minecraft": "~1.21.3",
 		"java": ">=21",
 		"fabric-api": "*",
 		"luckperms": "*"
