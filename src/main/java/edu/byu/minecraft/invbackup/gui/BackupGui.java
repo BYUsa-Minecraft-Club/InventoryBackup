@@ -5,6 +5,7 @@ import edu.byu.minecraft.invbackup.data.PlayerBackupData;
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
 import eu.pb4.sgui.api.elements.GuiElementInterface;
 import eu.pb4.sgui.api.gui.GuiInterface;
+import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.inventory.SimpleInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
@@ -41,10 +42,10 @@ public class BackupGui extends PagedGui {
     @Override
     protected GuiSlot getElement(int id) {
         if(id < 4) {
-            return GuiSlot.of(new Slot(playerBackupData.getArmor(), 3 - id, 0, 0)); //3 - id -> helmet first
+            return GuiSlot.of(new Slot(playerBackupData.getMain(), 39 - id, 0, 0));
         }
         else if(id == 8) {
-            return GuiSlot.of(new Slot(playerBackupData.getOffHand(), 0, 0, 0));
+            return GuiSlot.of(new Slot(playerBackupData.getMain(), 40, 0, 0));
         }
         else if(id < 9) {
             return GuiSlot.empty();

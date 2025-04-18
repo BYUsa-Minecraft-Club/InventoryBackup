@@ -52,7 +52,7 @@ public record GuiSlot(@Nullable GuiElementInterface element, @Nullable Slot slot
         if (list.isEmpty()) {
             list.add(Text.empty());
         }
-        return GuiElementBuilder.from(stack).setName(list.removeFirst()).setLore(list).hideDefaultTooltip();
+        return GuiElementBuilder.from(stack).setName(list.removeFirst()).setLore(list);
     }
 
 

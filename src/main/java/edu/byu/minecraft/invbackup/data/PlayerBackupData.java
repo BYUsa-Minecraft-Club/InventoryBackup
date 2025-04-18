@@ -2,54 +2,57 @@ package edu.byu.minecraft.invbackup.data;
 
 
 import edu.byu.minecraft.InventoryBackup;
+import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.player.HungerManager;
 import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.inventory.EnderChestInventory;
-import net.minecraft.inventory.Inventories;
+import net.minecraft.inventory.Inventory;
 import net.minecraft.inventory.SimpleInventory;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.collection.DefaultedList;
 import net.minecraft.util.math.Vec3d;
 
+import java.util.Iterator;
+import java.util.Optional;
 import java.util.UUID;
 
 public class PlayerBackupData {
 
-    private final UUID uuid;
+    private static final int CURRENT_VERSION = 1;
 
-    private final Long timestamp;
+    private UUID uuid;
 
-    private final SimpleInventory main;
+    private Long timestamp;
 
-    private final SimpleInventory armor;
+    private SimpleInventory main;
 
-    private final SimpleInventory offHand;
+    private SimpleInventory enderChest;
 
-    private final SimpleInventory enderChest;
+    private int experienceLevel;
 
-    private final int experienceLevel;
+    private int totalExperience;
 
-    private final int totalExperience;
+    private float experienceProgress;
 
-    private final float experienceProgress;
+    private float health;
 
-    private final float health;
+    private HungerManager hungerManager;
 
-    private final HungerManager hungerManager;
+    private Identifier world;
 
-    private final Identifier world;
+    private Vec3d pos;
 
-    private final Vec3d pos;
+    private LogType logType;
 
-    private final LogType logType;
-
-    private final String deathReason;
+    private String deathReason;
+    
+    private PlayerBackupData() {
+        
+    }
 
 
     public PlayerBackupData(ServerPlayerEntity player, LogType logType) {
@@ -63,10 +66,8 @@ public class PlayerBackupData {
         this.timestamp = System.currentTimeMillis();
         this.deathReason = deathReason;
 
-        main = copy(player.getInventory().main);
-        armor = copy(player.getInventory().armor);
-        offHand = copy(player.getInventory().offHand);
-        enderChest = copy(player.getEnderChestInventory().getHeldStacks());
+        main = copy(player.getInventory());
+        enderChest = copy(player.getEnderChestInventory());
 
         totalExperience = player.totalExperience;
         experienceLevel = player.experienceLevel;
@@ -82,41 +83,11 @@ public class PlayerBackupData {
         pos = player.getPos();
     }
 
-    public PlayerBackupData(NbtCompound nbt, RegistryWrapper.WrapperLookup lookup) {
-        uuid = nbt.getUuid("uuid");
-        timestamp = nbt.getLong("timestamp");
-
-        main = new SimpleInventory(PlayerInventory.MAIN_SIZE);
-        armor = new SimpleInventory(4);
-        offHand = new SimpleInventory(1);
-        enderChest = new SimpleInventory(27);
-
-        main.readNbtList((NbtList) nbt.get("main"), lookup);
-        armor.readNbtList((NbtList) nbt.get("armor"), lookup);
-        offHand.readNbtList((NbtList) nbt.get("offHand"), lookup);
-        enderChest.readNbtList((NbtList) nbt.get("enderChest"), lookup);
-
-        experienceLevel = nbt.getInt("experienceLevel");
-        totalExperience = nbt.getInt("totalExperience");
-        experienceProgress = nbt.getFloat("experienceProgress");
-        health = nbt.getFloat("health");
-
-        hungerManager = new HungerManager();
-        hungerManager.readNbt(nbt.getCompound("hungerManager"));
-
-        world = Identifier.tryParse(nbt.getString("world"));
-        pos = new Vec3d(nbt.getDouble("xpos"), nbt.getDouble("ypos"), nbt.getDouble("zpos"));
-        logType = LogType.valueOf(nbt.getString("logType"));
-        deathReason = (nbt.contains("deathReason")) ? nbt.getString("deathReason") : null;
-    }
-
     public PlayerBackupData(PlayerBackupData copy) {
         uuid = copy.uuid;
         timestamp = copy.timestamp;
-        main = copy(copy.main.getHeldStacks());
-        armor = copy(copy.armor.getHeldStacks());
-        offHand = copy(copy.offHand.getHeldStacks());
-        enderChest = copy(copy.enderChest.getHeldStacks());
+        main = copy(copy.main);
+        enderChest = copy(copy.enderChest);
         experienceLevel = copy.experienceLevel;
         totalExperience = copy.totalExperience;
         experienceProgress = copy.experienceProgress;
@@ -128,15 +99,97 @@ public class PlayerBackupData {
         deathReason = copy.deathReason;
     }
 
+    public static PlayerBackupData fromNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup lookup) {
+        Optional<Integer> versionOpt = nbt.getInt("version");
+        if (versionOpt.isEmpty()) return fromNbtBeforeVersion(nbt, lookup);
+        Integer version = versionOpt.get();
+        return switch (version) {
+            case 1 -> fromNbtV1(nbt, lookup);
+            default -> throw new IllegalStateException("Unexpected value: " + version);
+        };
+    }
+
+    public static PlayerBackupData fromNbtV1(NbtCompound nbt, RegistryWrapper.WrapperLookup lookup) {
+        PlayerBackupData data = new PlayerBackupData();
+        data.uuid = UUID.fromString(nbt.getString("uuid").get());
+        data.timestamp = nbt.getLong("timestamp").get();
+
+        int mainSize = getMainSize();
+        data.main = new SimpleInventory(mainSize);
+        data.enderChest = new SimpleInventory(27);
+
+        data.main.readNbtList((NbtList) nbt.get("main"), lookup);
+        data.enderChest.readNbtList((NbtList) nbt.get("enderChest"), lookup);
+
+        data.experienceLevel = nbt.getInt("experienceLevel").get();
+        data.totalExperience = nbt.getInt("totalExperience").get();
+        data.experienceProgress = nbt.getFloat("experienceProgress").get();
+        data.health = nbt.getFloat("health").get();
+
+        data.hungerManager = new HungerManager();
+        data.hungerManager.readNbt(nbt.getCompound("hungerManager").get());
+
+        data.world = Identifier.tryParse(nbt.getString("world").get());
+        data.pos = new Vec3d(nbt.getDouble("xpos").get(), nbt.getDouble("ypos").get(), nbt.getDouble("zpos").get());
+        data.logType = LogType.valueOf(nbt.getString("logType").get());
+        Optional<String> deathReasonOpt = nbt.getString("deathReason");
+        data.deathReason = deathReasonOpt.orElse(null);
+
+        return data;
+    }
+
+    public static PlayerBackupData fromNbtBeforeVersion(NbtCompound nbt, RegistryWrapper.WrapperLookup lookup) {
+        PlayerBackupData data = new PlayerBackupData();
+        data.uuid = SaveData.uuidFromIntArray(nbt.getIntArray("uuid").get());
+        data.timestamp = nbt.getLong("timestamp").get();
+
+        data.main =  new SimpleInventory(getMainSize());
+        data.enderChest = new SimpleInventory(27);
+
+        data.main.readNbtList((NbtList) nbt.get("main"), lookup);
+        data.enderChest.readNbtList((NbtList) nbt.get("enderChest"), lookup);
+
+        SimpleInventory armor = new SimpleInventory(4);
+        armor.readNbtList((NbtList) nbt.get("armor"), lookup);
+        SimpleInventory offHand = new SimpleInventory(1);
+        offHand.readNbtList((NbtList) nbt.get("offHand"), lookup);
+
+        for(int offset : PlayerInventory.EQUIPMENT_SLOTS.keySet()) {
+            EquipmentSlot slotId = PlayerInventory.EQUIPMENT_SLOTS.get(offset);
+            switch (slotId) {
+                case OFFHAND -> data.main.setStack(offset, offHand.getStack(0));
+                case FEET -> data.main.setStack(offset, armor.getStack(0));
+                case LEGS -> data.main.setStack(offset, armor.getStack(1));
+                case CHEST -> data.main.setStack(offset, armor.getStack(2));
+                case HEAD -> data.main.setStack(offset, armor.getStack(3));
+            }
+        }
+
+        data.experienceLevel = nbt.getInt("experienceLevel").get();
+        data.totalExperience = nbt.getInt("totalExperience").get();
+        data.experienceProgress = nbt.getFloat("experienceProgress").get();
+        data.health = nbt.getFloat("health").get();
+
+        data.hungerManager = new HungerManager();
+        data.hungerManager.readNbt(nbt.getCompound("hungerManager").get());
+
+        data.world = Identifier.tryParse(nbt.getString("world").get());
+        data.pos = new Vec3d(nbt.getDouble("xpos").get(), nbt.getDouble("ypos").get(), nbt.getDouble("zpos").get());
+        data.logType = LogType.valueOf(nbt.getString("logType").get());
+        Optional<String> deathReasonOpt = nbt.getString("deathReason");
+        data.deathReason = deathReasonOpt.orElse(null);
+
+        return data;
+    }
+
+
     public NbtCompound toNbt(RegistryWrapper.WrapperLookup lookup) {
         NbtCompound nbtCompound = new NbtCompound();
-
-        nbtCompound.putUuid("uuid", uuid);
+        nbtCompound.putInt("version", CURRENT_VERSION);
+        nbtCompound.putString("uuid", uuid.toString());
         nbtCompound.putLong("timestamp", timestamp);
 
         nbtCompound.put("main", main.toNbtList(lookup));
-        nbtCompound.put("armor", armor.toNbtList(lookup));
-        nbtCompound.put("offHand", offHand.toNbtList(lookup));
         nbtCompound.put("enderChest", enderChest.toNbtList(lookup));
 
         nbtCompound.putInt("experienceLevel", experienceLevel);
@@ -161,27 +214,33 @@ public class PlayerBackupData {
     public void restore(ServerPlayerEntity targetPlayer) {
         InventoryBackup.data.addBackup(new PlayerBackupData(targetPlayer, LogType.FORCE));
 
-        restore(main, targetPlayer.getInventory().main);
-        restore(armor, targetPlayer.getInventory().armor);
-        restore(offHand, targetPlayer.getInventory().offHand);
-        restore(enderChest, targetPlayer.getEnderChestInventory().heldStacks);
+        restore(main, targetPlayer.getInventory());
+        restore(enderChest, targetPlayer.getEnderChestInventory());
 
         targetPlayer.setExperienceLevel(experienceLevel);
         targetPlayer.setExperiencePoints((int) (experienceProgress * targetPlayer.getNextLevelExperience()));
     }
 
-    private SimpleInventory copy(DefaultedList<ItemStack> stacks) {
-        SimpleInventory inventory = new SimpleInventory(stacks.size());
-        for (int i = 0; i < stacks.size(); i++) {
-            inventory.setStack(i, stacks.get(i).copy());
+    private SimpleInventory copy(Inventory from) {
+        SimpleInventory inventory = new SimpleInventory(from.size());
+        for (int i = 0; i < from.size(); i++) {
+            inventory.setStack(i, from.getStack(i).copy());
         }
         return inventory;
     }
 
-    private void restore(SimpleInventory source, DefaultedList<ItemStack> target) {
+    private void restore(SimpleInventory source, Inventory target) {
         for (int i = 0; i < source.size(); i++) {
-            target.set(i, source.getHeldStacks().get(i).copy());
+            target.setStack(i, source.getHeldStacks().get(i).copy());
         }
+    }
+
+    private static int getMainSize() {
+        int mainSize = PlayerInventory.MAIN_SIZE;
+        for(int slot : PlayerInventory.EQUIPMENT_SLOTS.keySet()) {
+            mainSize = Math.max(mainSize, slot + 1);
+        }
+        return mainSize;
     }
 
 
@@ -197,14 +256,6 @@ public class PlayerBackupData {
 
     public SimpleInventory getMain() {
         return main;
-    }
-
-    public SimpleInventory  getArmor() {
-        return armor;
-    }
-
-    public SimpleInventory  getOffHand() {
-        return offHand;
     }
 
     public SimpleInventory  getEnderChest() {
