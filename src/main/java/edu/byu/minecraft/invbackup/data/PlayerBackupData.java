@@ -114,12 +114,8 @@ public class PlayerBackupData {
         data.uuid = UUID.fromString(nbt.getString("uuid").get());
         data.timestamp = nbt.getLong("timestamp").get();
 
-        int mainSize = getMainSize();
-        data.main = new SimpleInventory(mainSize);
-        data.enderChest = new SimpleInventory(27);
-
-        data.main.readNbtList((NbtList) nbt.get("main"), lookup);
-        data.enderChest.readNbtList((NbtList) nbt.get("enderChest"), lookup);
+        data.main = nbtToInv(nbt.getCompound("main").get(), lookup);
+        data.enderChest = nbtToInv(nbt.getCompound("enderChest").get(), lookup);
 
         data.experienceLevel = nbt.getInt("experienceLevel").get();
         data.totalExperience = nbt.getInt("totalExperience").get();
@@ -143,16 +139,11 @@ public class PlayerBackupData {
         data.uuid = SaveData.uuidFromIntArray(nbt.getIntArray("uuid").get());
         data.timestamp = nbt.getLong("timestamp").get();
 
-        data.main =  new SimpleInventory(getMainSize());
-        data.enderChest = new SimpleInventory(27);
+        data.main = nbtToInv(nbt.getCompound("main").get(), lookup);
+        data.enderChest = nbtToInv(nbt.getCompound("enderChest").get(), lookup);
 
-        data.main.readNbtList((NbtList) nbt.get("main"), lookup);
-        data.enderChest.readNbtList((NbtList) nbt.get("enderChest"), lookup);
-
-        SimpleInventory armor = new SimpleInventory(4);
-        armor.readNbtList((NbtList) nbt.get("armor"), lookup);
-        SimpleInventory offHand = new SimpleInventory(1);
-        offHand.readNbtList((NbtList) nbt.get("offHand"), lookup);
+        SimpleInventory armor = nbtToInv(nbt.getCompound("armor").get(), lookup);
+        SimpleInventory offHand = nbtToInv(nbt.getCompound("offHand").get(), lookup);
 
         for(int offset : PlayerInventory.EQUIPMENT_SLOTS.keySet()) {
             EquipmentSlot slotId = PlayerInventory.EQUIPMENT_SLOTS.get(offset);
@@ -182,6 +173,15 @@ public class PlayerBackupData {
         return data;
     }
 
+    private static SimpleInventory nbtToInv(NbtCompound nbt, RegistryWrapper.WrapperLookup lookup) {
+        SimpleInventory inv = new SimpleInventory(nbt.getInt("size").get());
+        nbt.getKeys().forEach(entry -> {
+            if (entry.equals("size")) return;
+            inv.setStack(Integer.parseInt(entry), ItemStack.fromNbt(lookup, nbt.get(entry)).orElse(ItemStack.EMPTY));
+        });
+        return inv;
+    }
+
 
     public NbtCompound toNbt(RegistryWrapper.WrapperLookup lookup) {
         NbtCompound nbtCompound = new NbtCompound();
@@ -189,8 +189,8 @@ public class PlayerBackupData {
         nbtCompound.putString("uuid", uuid.toString());
         nbtCompound.putLong("timestamp", timestamp);
 
-        nbtCompound.put("main", main.toNbtList(lookup));
-        nbtCompound.put("enderChest", enderChest.toNbtList(lookup));
+        nbtCompound.put("main", invToNbt(main, lookup));
+        nbtCompound.put("enderChest", invToNbt(enderChest, lookup));
 
         nbtCompound.putInt("experienceLevel", experienceLevel);
         nbtCompound.putInt("totalExperience", totalExperience);
@@ -208,6 +208,18 @@ public class PlayerBackupData {
         nbtCompound.putString("logType", logType.name());
         if (deathReason != null) nbtCompound.putString("deathReason", deathReason);
 
+        return nbtCompound;
+    }
+
+    private NbtCompound invToNbt(SimpleInventory inv, RegistryWrapper.WrapperLookup lookup) {
+        NbtCompound nbtCompound = new NbtCompound();
+        nbtCompound.putInt("size", inv.size());
+        for (int i = 0; i < inv.size(); i++) {
+            ItemStack itemStack = inv.getStack(i);
+            if(!itemStack.isEmpty()) {
+                nbtCompound.put(String.valueOf(i), itemStack.toNbt(lookup));
+            }
+        }
         return nbtCompound;
     }
 
