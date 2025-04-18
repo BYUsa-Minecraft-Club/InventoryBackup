@@ -22,7 +22,6 @@ import java.util.UUID;
 
 public class PlayerBackupData {
 
-    private static final int CURRENT_VERSION = 1;
 
     private UUID uuid;
 
@@ -99,8 +98,8 @@ public class PlayerBackupData {
         deathReason = copy.deathReason;
     }
 
-    public static PlayerBackupData fromNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup lookup) {
-        Optional<Integer> versionOpt = nbt.getInt("version");
+    public static PlayerBackupData fromNbt(Optional<Integer> versionOpt, NbtCompound nbt,
+                                           RegistryWrapper.WrapperLookup lookup) {
         if (versionOpt.isEmpty()) return fromNbtBeforeVersion(nbt, lookup);
         Integer version = versionOpt.get();
         return switch (version) {
@@ -185,7 +184,6 @@ public class PlayerBackupData {
 
     public NbtCompound toNbt(RegistryWrapper.WrapperLookup lookup) {
         NbtCompound nbtCompound = new NbtCompound();
-        nbtCompound.putInt("version", CURRENT_VERSION);
         nbtCompound.putString("uuid", uuid.toString());
         nbtCompound.putLong("timestamp", timestamp);
 

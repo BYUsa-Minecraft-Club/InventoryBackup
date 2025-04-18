@@ -21,6 +21,8 @@ import java.util.*;
 
 public class SaveData extends PersistentState {
 
+    private static final int CURRENT_VERSION = 1;
+
     private Map<UUID, EnumMap<LogType, List<PlayerBackupData>>> data = new HashMap<>();
 
     private Map<UUID, String> players = new HashMap<>();
@@ -50,14 +52,25 @@ public class SaveData extends PersistentState {
             playersNbt.add(playerNbt);
         });
         nbt.put("players", playersNbt);
+        nbt.putInt("version", CURRENT_VERSION);
 
         return nbt;
     }
 
+    public static SaveData createFromNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup lookup) {
+        Optional<Integer> versionOpt = nbt.getInt("version");
+        return createFromNbtV1(versionOpt, nbt, lookup);
+        /*The nbt reading for this class didn't directly change for this class (it did for PlayerBackupData)
+        when the version system was added, so versionless and v1 are the same. However, if this class and
+        the reading from nbt for this class needs to change in a newer version, this method will need to change
+        based on the different versions.
+        */
+    }
 
-    public static SaveData createFromNbt(NbtCompound tag, RegistryWrapper.WrapperLookup lookup) {
+
+    public static SaveData createFromNbtV1(Optional<Integer> versionOpt, NbtCompound tag,
+                                           RegistryWrapper.WrapperLookup lookup) {
         SaveData state = new SaveData();
-
         Map<UUID, EnumMap<LogType, List<PlayerBackupData>>> data = new HashMap<>();
         NbtCompound dataNbt = tag.getCompound("data").get();
         dataNbt.getKeys().forEach(key -> {
@@ -72,7 +85,8 @@ public class SaveData extends PersistentState {
                 logTypeMap.put(LogType.valueOf(logType), backupDataList);
                 playerNbt.getKeys().forEach(num -> {
                     if (num.equals("size")) return;
-                    backupDataList.set(Integer.parseInt(num), PlayerBackupData.fromNbt(playerNbt.getCompound(num).get(), lookup));
+                    backupDataList.set(Integer.parseInt(num),
+                            PlayerBackupData.fromNbt(versionOpt, playerNbt.getCompound(num).get(), lookup));
                 });
             });
         });
