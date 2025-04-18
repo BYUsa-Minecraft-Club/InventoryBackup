@@ -3,11 +3,11 @@ package edu.byu.minecraft.invbackup.data;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.*;
 import edu.byu.minecraft.InventoryBackup;
-import net.fabricmc.fabric.impl.attachment.AttachmentPersistentState;
-import net.fabricmc.fabric.impl.attachment.AttachmentTargetImpl;
-import net.minecraft.inventory.SimpleInventory;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.*;
+import edu.byu.minecraft.invbackup.data.readsavedata.ReadSaveBackupDataStrategy;
+import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtElement;
+import net.minecraft.nbt.NbtList;
+import net.minecraft.nbt.NbtOps;
 import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -16,7 +16,6 @@ import net.minecraft.world.PersistentState;
 import net.minecraft.world.PersistentStateManager;
 import net.minecraft.world.PersistentStateType;
 
-import java.nio.ByteBuffer;
 import java.util.*;
 
 public class SaveData extends PersistentState {
@@ -59,55 +58,7 @@ public class SaveData extends PersistentState {
 
     public static SaveData createFromNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup lookup) {
         Optional<Integer> versionOpt = nbt.getInt("version");
-        return createFromNbtV1(versionOpt, nbt, lookup);
-        /*The nbt reading for this class didn't directly change for this class (it did for PlayerBackupData)
-        when the version system was added, so versionless and v1 are the same. However, if this class and
-        the reading from nbt for this class needs to change in a newer version, this method will need to change
-        based on the different versions.
-        */
-    }
-
-
-    public static SaveData createFromNbtV1(Optional<Integer> versionOpt, NbtCompound tag,
-                                           RegistryWrapper.WrapperLookup lookup) {
-        SaveData state = new SaveData();
-        Map<UUID, EnumMap<LogType, List<PlayerBackupData>>> data = new HashMap<>();
-        NbtCompound dataNbt = tag.getCompound("data").get();
-        dataNbt.getKeys().forEach(key -> {
-            EnumMap<LogType, List<PlayerBackupData>> logTypeMap = new EnumMap<>(LogType.class);
-            data.put(UUID.fromString(key), logTypeMap);
-            NbtCompound worldNbt = dataNbt.getCompound(key).get();
-            worldNbt.getKeys().forEach(logType -> {
-                NbtCompound playerNbt = worldNbt.getCompound(logType).get();
-                int size = playerNbt.getInt("size").get();
-                List<PlayerBackupData> backupDataList =
-                        new LinkedList<>(Arrays.stream(new PlayerBackupData[size]).toList());
-                logTypeMap.put(LogType.valueOf(logType), backupDataList);
-                playerNbt.getKeys().forEach(num -> {
-                    if (num.equals("size")) return;
-                    backupDataList.set(Integer.parseInt(num),
-                            PlayerBackupData.fromNbt(versionOpt, playerNbt.getCompound(num).get(), lookup));
-                });
-            });
-        });
-        state.data = data;
-
-        Map<UUID, String> players = new HashMap<>();
-        NbtList playersNbt = (NbtList) tag.get("players");
-        if(playersNbt != null) playersNbt.forEach(playerNbt -> {
-            NbtCompound playerData = (NbtCompound) playerNbt;
-            var hi = playerData.get("uuid");
-            UUID uuid;
-            try {
-                uuid = UUID.fromString(playerData.getString("uuid").get());
-            } catch (Throwable t) {
-                uuid = uuidFromIntArray(playerData.getIntArray("uuid").get());
-            }
-            players.put(uuid, playerData.getString("ign").get());
-        });
-        state.players = players;
-
-        return state;
+        return ReadSaveBackupDataStrategy.forVersion(versionOpt).fromNbt(versionOpt, nbt, lookup);
     }
 
 
@@ -140,48 +91,36 @@ public class SaveData extends PersistentState {
 
 
     public void addBackup(PlayerBackupData backup) {
-        if (!data.containsKey(backup.getUuid())) {
-            data.put(backup.getUuid(), new EnumMap<>(LogType.class));
+        if (!data.containsKey(backup.uuid())) {
+            data.put(backup.uuid(), new EnumMap<>(LogType.class));
         }
-        if (!data.get(backup.getUuid()).containsKey(backup.getLogType())) {
-            data.get(backup.getUuid()).put(backup.getLogType(), new LinkedList<>());
+        if (!data.get(backup.uuid()).containsKey(backup.logType())) {
+            data.get(backup.uuid()).put(backup.logType(), new LinkedList<>());
         }
-        data.get(backup.getUuid()).get(backup.getLogType()).add(backup);
+        data.get(backup.uuid()).get(backup.logType()).add(backup);
 
-        int max = InventoryBackup.maxSaves(backup.getLogType());
+        int max = InventoryBackup.maxSaves(backup.logType());
 
-        while (max < data.get(backup.getUuid()).get(backup.getLogType()).size()) {
-            data.get(backup.getUuid()).get(backup.getLogType()).removeFirst();
+        while (max < data.get(backup.uuid()).get(backup.logType()).size()) {
+            data.get(backup.uuid()).get(backup.logType()).removeFirst();
         }
 
         markDirty();
     }
 
-
     public Map<UUID, EnumMap<LogType, List<PlayerBackupData>>> getData() {
         return data;
     }
 
+    public void setData(Map<UUID, EnumMap<LogType, List<PlayerBackupData>>> data) {
+        this.data = data;
+    }
 
     public Map<UUID, String> getPlayers() {
         return players;
     }
 
-    static UUID uuidFromIntArray(int[] intArray) {
-        if (intArray.length != 4) {
-            throw new IllegalArgumentException("The integer array must have a length of 4.");
-        }
-
-        ByteBuffer buffer = ByteBuffer.allocate(16);
-        for (int i : intArray) {
-            buffer.putInt(i);
-        }
-
-        buffer.rewind();
-        long mostSignificantBits = buffer.getLong();
-        long leastSignificantBits = buffer.getLong();
-
-        return new UUID(mostSignificantBits, leastSignificantBits);
+    public void setPlayers(Map<UUID, String> players) {
+        this.players = players;
     }
-
 }

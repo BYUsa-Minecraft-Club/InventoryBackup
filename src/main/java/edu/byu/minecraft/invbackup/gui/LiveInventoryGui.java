@@ -1,18 +1,14 @@
 package edu.byu.minecraft.invbackup.gui;
 
 import edu.byu.minecraft.InventoryBackup;
-import edu.byu.minecraft.invbackup.data.PlayerBackupData;
-import edu.byu.minecraft.invbackup.mixin.PlayerManagerAccessor;
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
 import eu.pb4.sgui.api.gui.GuiInterface;
 import net.minecraft.item.Items;
 import net.minecraft.screen.slot.Slot;
-import net.minecraft.server.PlayerManager;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 
 import java.util.Objects;
-import java.util.UUID;
 
 public class LiveInventoryGui extends PagedGui {
     private final String playerName;

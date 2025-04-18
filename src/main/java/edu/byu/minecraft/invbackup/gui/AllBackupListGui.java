@@ -1,16 +1,15 @@
 package edu.byu.minecraft.invbackup.gui;
 
-import com.mojang.authlib.GameProfile;
 import edu.byu.minecraft.InventoryBackup;
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
-import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.ProfileComponent;
 import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 public class AllBackupListGui extends PagedGui {
     private int ticker = 0;

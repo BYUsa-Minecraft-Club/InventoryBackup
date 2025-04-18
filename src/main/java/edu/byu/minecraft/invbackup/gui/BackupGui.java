@@ -3,11 +3,7 @@ package edu.byu.minecraft.invbackup.gui;
 import edu.byu.minecraft.InventoryBackup;
 import edu.byu.minecraft.invbackup.data.PlayerBackupData;
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
-import eu.pb4.sgui.api.elements.GuiElementInterface;
 import eu.pb4.sgui.api.gui.GuiInterface;
-import net.minecraft.entity.EquipmentSlot;
-import net.minecraft.inventory.SimpleInventory;
-import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.screen.slot.Slot;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -27,8 +23,8 @@ public class BackupGui extends PagedGui {
         super(player);
         this.targetUUID = uuid;
         this.playerName = playerName;
-        this.playerBackupData = new PlayerBackupData(playerBackupData);
-        this.setTitle(Text.of(String.format("%s's %s backup", playerName, playerBackupData.getLogType())));
+        this.playerBackupData = PlayerBackupData.copy(playerBackupData);
+        this.setTitle(Text.of(String.format("%s's %s backup", playerName, playerBackupData.logType())));
         this.previousUi = previousUi;
         this.updateDisplay();
     }
@@ -42,22 +38,22 @@ public class BackupGui extends PagedGui {
     @Override
     protected GuiSlot getElement(int id) {
         if(id < 4) {
-            return GuiSlot.of(new Slot(playerBackupData.getMain(), 39 - id, 0, 0));
+            return GuiSlot.of(new Slot(playerBackupData.main(), 39 - id, 0, 0));
         }
         else if(id == 8) {
-            return GuiSlot.of(new Slot(playerBackupData.getMain(), 40, 0, 0));
+            return GuiSlot.of(new Slot(playerBackupData.main(), 40, 0, 0));
         }
         else if(id < 9) {
             return GuiSlot.empty();
         }
         else if(id < 36) {
-            return GuiSlot.of(new Slot(playerBackupData.getMain(), id, 0, 0));
+            return GuiSlot.of(new Slot(playerBackupData.main(), id, 0, 0));
         }
         else if (id < 45) {
-            return GuiSlot.of(new Slot(playerBackupData.getMain(), id - 36, 0, 0));
+            return GuiSlot.of(new Slot(playerBackupData.main(), id - 36, 0, 0));
         }
         else if (id < 72) {
-            return GuiSlot.of(new Slot(playerBackupData.getEnderChest(), id - 45, 0, 0));
+            return GuiSlot.of(new Slot(playerBackupData.enderChest(), id - 45, 0, 0));
         }
         return GuiSlot.empty();
     }
@@ -69,8 +65,8 @@ public class BackupGui extends PagedGui {
             case 2 -> viewInventory();
             case 4 -> GuiSlot.restore(Objects.requireNonNull(player.getServer()), playerBackupData);
             case 6 -> viewEnderChest();
-            case 8 -> GuiSlot.teleport(player, playerBackupData.getWorld(), playerBackupData.getPos(), "Event");
-            default ->  GuiSlot.empty();
+            case 8 -> GuiSlot.teleport(player, playerBackupData.world(), playerBackupData.pos(), "Event");
+            default -> GuiSlot.empty();
         };
     }
 

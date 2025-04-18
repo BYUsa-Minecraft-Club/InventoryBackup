@@ -7,10 +7,7 @@ import edu.byu.minecraft.InventoryBackup;
 import net.minecraft.command.CommandSource;
 import net.minecraft.server.command.ServerCommandSource;
 
-import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
-import java.util.function.BiConsumer;
-import java.util.function.Predicate;
 
 public class SuggestionProviders {
     public static CompletableFuture<Suggestions> allPlayers(CommandContext<ServerCommandSource> ctx, SuggestionsBuilder builder) {

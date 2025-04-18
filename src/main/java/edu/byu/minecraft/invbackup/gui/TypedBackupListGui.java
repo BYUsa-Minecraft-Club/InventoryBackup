@@ -46,14 +46,14 @@ public class TypedBackupListGui extends PagedGui {
     protected GuiSlot getElement(int id) {
         if (id < this.data.size()) {
             PlayerBackupData backupData = data.get(id);
-            String[] title = {String.format("%s's %s", playerName, backupData.getLogType()),
-                    new SimpleDateFormat("MM-dd-yyyy 'at' HH:mm:ss z").format(new Date(backupData.getTimestamp())),
-                    String.format("World: %s", backupData.getWorld().toString()),
-                    String.format("Location: %d %d %d", Math.round(backupData.getPos().getX()),
-                            Math.round(backupData.getPos().getY()), Math.round(backupData.getPos().getZ())),
-                    (backupData.getDeathReason() == null) ? "" : backupData.getDeathReason()};
+            String[] title = {String.format("%s's %s", playerName, backupData.logType()),
+                    new SimpleDateFormat("MM-dd-yyyy 'at' HH:mm:ss z").format(new Date(backupData.timestamp())),
+                    String.format("World: %s", backupData.world().toString()),
+                    String.format("Location: %d %d %d", Math.round(backupData.pos().getX()),
+                            Math.round(backupData.pos().getY()), Math.round(backupData.pos().getZ())),
+                    (backupData.deathReason() == null) ? "" : backupData.deathReason()};
 
-            Item displayItem = logTypeItem(backupData.getLogType());
+            Item displayItem = logTypeItem(backupData.logType());
             var element = GuiSlot.builder(displayItem, title).setCallback(
                     (index, type, action) -> new BackupGui(targetUUID, playerName, backupData, this, player).open());
 
@@ -96,7 +96,7 @@ public class TypedBackupListGui extends PagedGui {
         } else {
             ret = InventoryBackup.data.getData().get(targetUUID).get(logType);
         }
-        ret.sort(Comparator.comparing(PlayerBackupData::getTimestamp));
+        ret.sort(Comparator.comparing(PlayerBackupData::timestamp));
         return ret;
     }
 

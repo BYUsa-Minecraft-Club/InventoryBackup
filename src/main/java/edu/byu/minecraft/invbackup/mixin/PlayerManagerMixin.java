@@ -18,13 +18,13 @@ public class PlayerManagerMixin {
     public void injectOnPlayerConnect(ClientConnection connection, ServerPlayerEntity player,
                                       ConnectedClientData clientData, CallbackInfo ci) {
         InventoryBackup.data.checkPlayer(player);
-        PlayerBackupData backupData = new PlayerBackupData(player, LogType.JOIN);
+        PlayerBackupData backupData = PlayerBackupData.forPlayer(player, LogType.JOIN);
         InventoryBackup.data.addBackup(backupData);
     }
 
     @Inject(method="remove", at=@At("HEAD"))
     public void injectRemove(ServerPlayerEntity player, CallbackInfo ci) {
-        PlayerBackupData backupData = new PlayerBackupData(player, LogType.QUIT);
+        PlayerBackupData backupData = PlayerBackupData.forPlayer(player, LogType.QUIT);
         InventoryBackup.data.addBackup(backupData);
     }
 }
