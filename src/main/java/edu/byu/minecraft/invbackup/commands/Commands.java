@@ -1,6 +1,5 @@
 package edu.byu.minecraft.invbackup.commands;
 
-import com.mojang.authlib.GameProfile;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
@@ -10,22 +9,15 @@ import edu.byu.minecraft.invbackup.data.LogType;
 import edu.byu.minecraft.invbackup.data.PlayerBackupData;
 import edu.byu.minecraft.invbackup.gui.AllBackupListGui;
 import edu.byu.minecraft.invbackup.gui.PlayerBackupListGui;
-import edu.byu.minecraft.invbackup.mixin.PlayerManagerAccessor;
 import me.lucko.fabric.api.permissions.v0.Permissions;
 import net.minecraft.command.CommandRegistryAccess;
 import net.minecraft.command.argument.EntityArgumentType;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.network.packet.c2s.common.SyncedClientOptions;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.CommandManager.RegistrationEnvironment;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.UUID;
 import java.util.function.Predicate;
 
 import static net.minecraft.server.command.CommandManager.argument;

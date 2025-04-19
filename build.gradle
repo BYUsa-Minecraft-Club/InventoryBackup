@@ -58,7 +58,7 @@ dependencies {
 	// These are included in the Fabric API production distribution and allow you to update your mod to the latest modules at a later more convenient time.
 	// modImplementation "net.fabricmc.fabric-api:fabric-api-deprecated:${project.fabric_version}"
 
-	modImplementation include("eu.pb4:sgui:1.7.2+1.21.2")
+	modImplementation include("eu.pb4:sgui:1.2.2+1.20")
 
 	modImplementation include('me.lucko:fabric-permissions-api:0.2-SNAPSHOT')
 }

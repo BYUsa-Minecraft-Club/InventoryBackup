@@ -19,7 +19,7 @@ public class SaveData extends PersistentState {
 
 
     @Override
-    public NbtCompound writeNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup lookup) {
+    public NbtCompound writeNbt(NbtCompound nbt) {
         NbtCompound dataNbt = new NbtCompound();
         data.forEach((uuid, playerMap) -> {
             NbtCompound worldNbt = new NbtCompound();
@@ -27,7 +27,7 @@ public class SaveData extends PersistentState {
                 NbtCompound playerNbt = new NbtCompound();
                 playerNbt.putInt("size", backupDataList.size());
                 for (int i = 0; i < backupDataList.size(); i++) {
-                    playerNbt.put(String.valueOf(i), backupDataList.get(i).toNbt(lookup));
+                    playerNbt.put(String.valueOf(i), backupDataList.get(i).toNbt());
                 }
                 worldNbt.put(logType.name(), playerNbt);
             });
@@ -48,7 +48,7 @@ public class SaveData extends PersistentState {
     }
 
 
-    public static SaveData createFromNbt(NbtCompound tag, RegistryWrapper.WrapperLookup lookup) {
+    public static SaveData createFromNbt(NbtCompound tag) {
         SaveData state = new SaveData();
 
         Map<UUID, EnumMap<LogType, List<PlayerBackupData>>> data = new HashMap<>();
@@ -65,7 +65,7 @@ public class SaveData extends PersistentState {
                 logTypeMap.put(LogType.valueOf(logType), backupDataList);
                 playerNbt.getKeys().forEach(num -> {
                     if (num.equals("size")) return;
-                    backupDataList.set(Integer.parseInt(num), new PlayerBackupData(playerNbt.getCompound(num), lookup));
+                    backupDataList.set(Integer.parseInt(num), new PlayerBackupData(playerNbt.getCompound(num)));
                 });
             });
         });
@@ -85,8 +85,10 @@ public class SaveData extends PersistentState {
 
     public static SaveData getServerState(MinecraftServer server) {
         PersistentStateManager persistentStateManager = server.getOverworld().getPersistentStateManager();
-        Type<SaveData> type = new Type<>(SaveData::new, SaveData::createFromNbt, null);
-        return persistentStateManager.getOrCreate(type,  InventoryBackup.MOD_ID);
+        SaveData state =
+                persistentStateManager.getOrCreate(SaveData::createFromNbt, SaveData::new, InventoryBackup.MOD_ID);
+        state.markDirty();
+        return state;
     }
 
 

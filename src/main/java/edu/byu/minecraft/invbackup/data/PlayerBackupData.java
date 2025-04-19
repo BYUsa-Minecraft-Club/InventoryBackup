@@ -4,10 +4,7 @@ package edu.byu.minecraft.invbackup.data;
 import edu.byu.minecraft.InventoryBackup;
 import net.minecraft.entity.player.HungerManager;
 import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.inventory.EnderChestInventory;
-import net.minecraft.inventory.Inventories;
 import net.minecraft.inventory.SimpleInventory;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtList;
@@ -66,7 +63,7 @@ public class PlayerBackupData {
         main = copy(player.getInventory().main);
         armor = copy(player.getInventory().armor);
         offHand = copy(player.getInventory().offHand);
-        enderChest = copy(player.getEnderChestInventory().getHeldStacks());
+        enderChest = copy(player.getEnderChestInventory().stacks);
 
         totalExperience = player.totalExperience;
         experienceLevel = player.experienceLevel;
@@ -82,19 +79,14 @@ public class PlayerBackupData {
         pos = player.getPos();
     }
 
-    public PlayerBackupData(NbtCompound nbt, RegistryWrapper.WrapperLookup lookup) {
+    public PlayerBackupData(NbtCompound nbt) {
         uuid = nbt.getUuid("uuid");
         timestamp = nbt.getLong("timestamp");
 
-        main = new SimpleInventory(PlayerInventory.MAIN_SIZE);
-        armor = new SimpleInventory(4);
-        offHand = new SimpleInventory(1);
-        enderChest = new SimpleInventory(27);
-
-        main.readNbtList((NbtList) nbt.get("main"), lookup);
-        armor.readNbtList((NbtList) nbt.get("armor"), lookup);
-        offHand.readNbtList((NbtList) nbt.get("offHand"), lookup);
-        enderChest.readNbtList((NbtList) nbt.get("enderChest"), lookup);
+        main = nbtToInv(nbt.getCompound("main"));
+        armor = nbtToInv(nbt.getCompound("armor"));
+        offHand = nbtToInv(nbt.getCompound("offHand"));
+        enderChest = nbtToInv(nbt.getCompound("enderChest"));
 
         experienceLevel = nbt.getInt("experienceLevel");
         totalExperience = nbt.getInt("totalExperience");
@@ -110,13 +102,22 @@ public class PlayerBackupData {
         deathReason = (nbt.contains("deathReason")) ? nbt.getString("deathReason") : null;
     }
 
+    private SimpleInventory nbtToInv(NbtCompound nbt) {
+        SimpleInventory inv = new SimpleInventory(nbt.getInt("size"));
+        nbt.getKeys().forEach(entry -> {
+            if (entry.equals("size")) return;
+            inv.setStack(Integer.parseInt(entry), ItemStack.fromNbt(nbt.getCompound(entry)));
+        });
+        return inv;
+    }
+
     public PlayerBackupData(PlayerBackupData copy) {
         uuid = copy.uuid;
         timestamp = copy.timestamp;
-        main = copy(copy.main.getHeldStacks());
-        armor = copy(copy.armor.getHeldStacks());
-        offHand = copy(copy.offHand.getHeldStacks());
-        enderChest = copy(copy.enderChest.getHeldStacks());
+        main = copy(copy.main.stacks);
+        armor = copy(copy.armor.stacks);
+        offHand = copy(copy.offHand.stacks);
+        enderChest = copy(copy.enderChest.stacks);
         experienceLevel = copy.experienceLevel;
         totalExperience = copy.totalExperience;
         experienceProgress = copy.experienceProgress;
@@ -128,16 +129,16 @@ public class PlayerBackupData {
         deathReason = copy.deathReason;
     }
 
-    public NbtCompound toNbt(RegistryWrapper.WrapperLookup lookup) {
+    public NbtCompound toNbt() {
         NbtCompound nbtCompound = new NbtCompound();
 
         nbtCompound.putUuid("uuid", uuid);
         nbtCompound.putLong("timestamp", timestamp);
 
-        nbtCompound.put("main", main.toNbtList(lookup));
-        nbtCompound.put("armor", armor.toNbtList(lookup));
-        nbtCompound.put("offHand", offHand.toNbtList(lookup));
-        nbtCompound.put("enderChest", enderChest.toNbtList(lookup));
+        nbtCompound.put("main", invToNbt(main));
+        nbtCompound.put("armor", invToNbt(armor));
+        nbtCompound.put("offHand", invToNbt(offHand));
+        nbtCompound.put("enderChest", invToNbt(enderChest));
 
         nbtCompound.putInt("experienceLevel", experienceLevel);
         nbtCompound.putInt("totalExperience", totalExperience);
@@ -158,13 +159,25 @@ public class PlayerBackupData {
         return nbtCompound;
     }
 
+    private NbtCompound invToNbt(SimpleInventory inv) {
+        NbtCompound nbtCompound = new NbtCompound();
+        nbtCompound.putInt("size", inv.size());
+        for (int i = 0; i < inv.size(); i++) {
+            ItemStack itemStack = inv.getStack(i);
+            if(!itemStack.isEmpty()) {
+                nbtCompound.put(String.valueOf(i), itemStack.writeNbt(new NbtCompound()));
+            }
+        }
+        return nbtCompound;
+    }
+
     public void restore(ServerPlayerEntity targetPlayer) {
         InventoryBackup.data.addBackup(new PlayerBackupData(targetPlayer, LogType.FORCE));
 
         restore(main, targetPlayer.getInventory().main);
         restore(armor, targetPlayer.getInventory().armor);
         restore(offHand, targetPlayer.getInventory().offHand);
-        restore(enderChest, targetPlayer.getEnderChestInventory().heldStacks);
+        restore(enderChest, targetPlayer.getEnderChestInventory().stacks);
 
         targetPlayer.setExperienceLevel(experienceLevel);
         targetPlayer.setExperiencePoints((int) (experienceProgress * targetPlayer.getNextLevelExperience()));
@@ -180,7 +193,7 @@ public class PlayerBackupData {
 
     private void restore(SimpleInventory source, DefaultedList<ItemStack> target) {
         for (int i = 0; i < source.size(); i++) {
-            target.set(i, source.getHeldStacks().get(i).copy());
+            target.set(i, source.stacks.get(i).copy());
         }
     }
 
