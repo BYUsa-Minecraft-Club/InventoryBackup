@@ -4,6 +4,7 @@ import edu.byu.minecraft.invbackup.data.PlayerBackupData;
 import net.minecraft.inventory.SimpleInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtOps;
 import net.minecraft.registry.RegistryWrapper;
 
 import java.util.Optional;
@@ -23,7 +24,7 @@ public interface ReadPlayerBackupDataStrategy {
         SimpleInventory inv = new SimpleInventory(nbt.getInt("size").get());
         nbt.getKeys().forEach(entry -> {
             if (entry.equals("size")) return;
-            inv.setStack(Integer.parseInt(entry), ItemStack.fromNbt(lookup, nbt.get(entry)).orElse(ItemStack.EMPTY));
+            inv.setStack(Integer.parseInt(entry), ItemStack.CODEC.decode(NbtOps.INSTANCE, nbt.get(entry)).result().orElseThrow().getFirst());
         });
         return inv;
     }

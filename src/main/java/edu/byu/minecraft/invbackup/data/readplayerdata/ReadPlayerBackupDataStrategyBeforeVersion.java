@@ -5,9 +5,12 @@ import edu.byu.minecraft.invbackup.data.PlayerBackupData;
 import edu.byu.minecraft.invbackup.data.SaveDataUtils;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.player.PlayerInventory;
+import net.minecraft.inventory.Inventories;
 import net.minecraft.inventory.SimpleInventory;
+import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtList;
+import net.minecraft.nbt.NbtOps;
 import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.Vec3d;
@@ -27,10 +30,10 @@ public class ReadPlayerBackupDataStrategyBeforeVersion implements ReadPlayerBack
         SimpleInventory offHand = new SimpleInventory(1);
         SimpleInventory enderChest = new SimpleInventory(27);
 
-        main.readNbtList((NbtList) nbt.get("main"), lookup);
-        armor.readNbtList((NbtList) nbt.get("armor"), lookup);
-        offHand.readNbtList((NbtList) nbt.get("offHand"), lookup);
-        enderChest.readNbtList((NbtList) nbt.get("enderChest"), lookup);
+        nbt.getListOrEmpty("main").forEach(nbtElement -> ItemStack.CODEC.decode(NbtOps.INSTANCE, nbtElement).result().ifPresent(stack -> main.addStack(stack.getFirst())));
+        nbt.getListOrEmpty("armor").forEach(nbtElement -> ItemStack.CODEC.decode(NbtOps.INSTANCE, nbtElement).result().ifPresent(stack -> armor.addStack(stack.getFirst())));
+        nbt.getListOrEmpty("offHand").forEach(nbtElement -> ItemStack.CODEC.decode(NbtOps.INSTANCE, nbtElement).result().ifPresent(stack -> offHand.addStack(stack.getFirst())));
+        nbt.getListOrEmpty("enderChest").forEach(nbtElement -> ItemStack.CODEC.decode(NbtOps.INSTANCE, nbtElement).result().ifPresent(stack -> enderChest.addStack(stack.getFirst())));
 
         for(int offset : PlayerInventory.EQUIPMENT_SLOTS.keySet()) {
             EquipmentSlot slotId = PlayerInventory.EQUIPMENT_SLOTS.get(offset);

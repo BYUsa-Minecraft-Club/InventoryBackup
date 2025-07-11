@@ -21,6 +21,8 @@ import net.minecraft.server.PlayerManager;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.storage.ReadView;
+import net.minecraft.util.ErrorReporter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -87,8 +89,8 @@ public class InventoryBackup implements ModInitializer {
                 throw new RuntimeException("Cannot find player with name " + playerName);
             }
             GameProfile profile = new GameProfile(uuid, playerName);
-            requestedPlayer = server.getPlayerManager().createPlayer(profile, SyncedClientOptions.createDefault());
-            Optional<NbtCompound> compoundOpt = server.getPlayerManager().loadPlayerData(requestedPlayer);
+            requestedPlayer = new ServerPlayerEntity(server, server.getOverworld(), profile, SyncedClientOptions.createDefault());
+            Optional<ReadView> readViewOpt = server.getPlayerManager().loadPlayerData(requestedPlayer, new ErrorReporter.Impl(() -> MOD_ID));
         }
 
         return requestedPlayer;

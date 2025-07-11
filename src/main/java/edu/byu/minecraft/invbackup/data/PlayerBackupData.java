@@ -1,11 +1,14 @@
 package edu.byu.minecraft.invbackup.data;
 
 
+import com.mojang.serialization.DynamicOps;
 import edu.byu.minecraft.InventoryBackup;
+import net.minecraft.inventory.Inventories;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.inventory.SimpleInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtOps;
 import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Identifier;
@@ -64,7 +67,7 @@ public record PlayerBackupData(UUID uuid, Long timestamp, SimpleInventory main, 
         for (int i = 0; i < inv.size(); i++) {
             ItemStack itemStack = inv.getStack(i);
             if(!itemStack.isEmpty()) {
-                nbtCompound.put(String.valueOf(i), itemStack.toNbt(lookup));
+                nbtCompound.put(String.valueOf(i), ItemStack.CODEC.encode(itemStack, NbtOps.INSTANCE, new NbtCompound()).getOrThrow());
             }
         }
         return nbtCompound;
