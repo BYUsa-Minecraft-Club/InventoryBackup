@@ -36,6 +36,10 @@ public record GuiSlot(@Nullable GuiElementInterface element, @Nullable Slot slot
         return new GuiSlot(null, slot);
     }
 
+    public static GuiSlot of(ItemStack itemStack) {
+        return of(GuiElementBuilder.from(itemStack));
+    }
+
     public static GuiElementBuilder builder(Item base, String... text) {
         return builder(base.getDefaultStack(), text);
     }

@@ -1,24 +1,20 @@
 package edu.byu.minecraft;
 
 import com.mojang.authlib.GameProfile;
-import com.mojang.brigadier.arguments.StringArgumentType;
-import com.mojang.brigadier.context.CommandContext;
-import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import edu.byu.minecraft.invbackup.commands.Commands;
+import edu.byu.minecraft.invbackup.data.GlobalSaveData;
 import edu.byu.minecraft.invbackup.data.LogType;
 import edu.byu.minecraft.invbackup.data.PlayerBackupData;
-import edu.byu.minecraft.invbackup.data.SaveData;
+import edu.byu.minecraft.invbackup.PlayerBackupHolder;
 import edu.byu.minecraft.invbackup.mixin.PlayerManagerAccessor;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.minecraft.entity.Entity;
-import net.minecraft.nbt.NbtCompound;
 import net.minecraft.network.packet.c2s.common.SyncedClientOptions;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.PlayerManager;
-import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.storage.ReadView;
@@ -47,7 +43,7 @@ public class InventoryBackup implements ModInitializer {
 
     public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
 
-    public static SaveData data;
+    public static GlobalSaveData data;
 
 
     @Override
@@ -58,13 +54,27 @@ public class InventoryBackup implements ModInitializer {
     }
 
     private void serverStarted(MinecraftServer server) {
-        data = SaveData.getServerState(server);
+        data = GlobalSaveData.getServerState(server);
+        if(data.data != null) {
+            data.data.forEach((uuid, logTypeListEnumMap) -> {
+                String playerName = data.getPlayers().get(uuid);
+                if(playerName == null) {
+                    String log = "Could not find player with uuid:%s. Their backups:\n%s\n".formatted(uuid, logTypeListEnumMap);
+                    System.out.println(log);
+                    InventoryBackup.LOGGER.warn(log);
+                    return;
+                }
+                ServerPlayerEntity player = InventoryBackup.getPlayer(playerName, server);
+                ((PlayerBackupHolder) player).getPlayerBackups().putAll(logTypeListEnumMap);
+                InventoryBackup.savePlayerData(player);
+            });
+        }
     }
 
     private void entityUnload(Entity entity, ServerWorld world) {
         if (entity instanceof ServerPlayerEntity player && player.getHealth() > 0 && !player.isDisconnected()) {
             PlayerBackupData backupData = PlayerBackupData.forPlayer(player, LogType.WORLD_CHANGE);
-            InventoryBackup.data.addBackup(backupData);
+            ((PlayerBackupHolder) player).inventoryBackup$addBackup(backupData);
         }
     }
 

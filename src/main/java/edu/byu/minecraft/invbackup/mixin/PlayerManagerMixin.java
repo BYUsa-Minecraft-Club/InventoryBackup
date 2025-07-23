@@ -1,6 +1,7 @@
 package edu.byu.minecraft.invbackup.mixin;
 
 import edu.byu.minecraft.InventoryBackup;
+import edu.byu.minecraft.invbackup.PlayerBackupHolder;
 import edu.byu.minecraft.invbackup.data.LogType;
 import edu.byu.minecraft.invbackup.data.PlayerBackupData;
 import net.minecraft.network.ClientConnection;
@@ -19,12 +20,12 @@ public class PlayerManagerMixin {
                                       ConnectedClientData clientData, CallbackInfo ci) {
         InventoryBackup.data.checkPlayer(player);
         PlayerBackupData backupData = PlayerBackupData.forPlayer(player, LogType.JOIN);
-        InventoryBackup.data.addBackup(backupData);
+        ((PlayerBackupHolder) player).inventoryBackup$addBackup(backupData);
     }
 
     @Inject(method="remove", at=@At("HEAD"))
     public void injectRemove(ServerPlayerEntity player, CallbackInfo ci) {
         PlayerBackupData backupData = PlayerBackupData.forPlayer(player, LogType.QUIT);
-        InventoryBackup.data.addBackup(backupData);
+        ((PlayerBackupHolder) player).inventoryBackup$addBackup(backupData);
     }
 }

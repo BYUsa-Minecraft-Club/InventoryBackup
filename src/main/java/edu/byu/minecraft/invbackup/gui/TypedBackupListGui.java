@@ -3,6 +3,7 @@ package edu.byu.minecraft.invbackup.gui;
 import edu.byu.minecraft.InventoryBackup;
 import edu.byu.minecraft.invbackup.data.LogType;
 import edu.byu.minecraft.invbackup.data.PlayerBackupData;
+import edu.byu.minecraft.invbackup.PlayerBackupHolder;
 import net.minecraft.item.Item;
 import net.minecraft.item.Items;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -10,6 +11,7 @@ import net.minecraft.text.Text;
 
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class TypedBackupListGui extends PagedGui {
 
@@ -29,8 +31,9 @@ public class TypedBackupListGui extends PagedGui {
         this.targetUUID = uuid;
         this.playerName = playerName;
         this.logType = logType;
-        String logTypeStr = (logType == null) ? "ALL" : logType.name();
-        this.setTitle(Text.of(String.format("%s's %s backups", playerName, logTypeStr)));
+        String title = logType == null ? String.format("All of %s's backups", playerName) :
+                String.format("%s's %s backups", playerName, GuiUtils.readableLogType(logType));
+        this.setTitle(Text.of(title));
         this.data = getData();
         this.updateDisplay();
     }
@@ -46,14 +49,9 @@ public class TypedBackupListGui extends PagedGui {
     protected GuiSlot getElement(int id) {
         if (id < this.data.size()) {
             PlayerBackupData backupData = data.get(id);
-            String[] title = {String.format("%s's %s", playerName, backupData.logType()),
-                    new SimpleDateFormat("MM-dd-yyyy 'at' HH:mm:ss z").format(new Date(backupData.timestamp())),
-                    String.format("World: %s", backupData.world().toString()),
-                    String.format("Location: %d %d %d", Math.round(backupData.pos().getX()),
-                            Math.round(backupData.pos().getY()), Math.round(backupData.pos().getZ())),
-                    (backupData.deathReason() == null) ? "" : backupData.deathReason()};
+            String[] title = GuiUtils.getBackupDetails(playerName, backupData);
 
-            Item displayItem = logTypeItem(backupData.logType());
+            Item displayItem = Config.logTypeItem(backupData.logType());
             var element = GuiSlot.builder(displayItem, title).setCallback(
                     (index, type, action) -> new BackupGui(targetUUID, playerName, backupData, this, player).open());
 
@@ -87,27 +85,13 @@ public class TypedBackupListGui extends PagedGui {
 
 
     private List<PlayerBackupData> getData() {
-        List<PlayerBackupData> ret;
-        if (logType == null) {
-            ret = new ArrayList<>();
-            for (var hi : InventoryBackup.data.getData().get(targetUUID).entrySet()) {
-                ret.addAll(hi.getValue());
-            }
-        } else {
-            ret = InventoryBackup.data.getData().get(targetUUID).get(logType);
-        }
-        ret.sort(Comparator.comparing(PlayerBackupData::timestamp));
-        return ret;
-    }
+        ServerPlayerEntity targetPlayer = InventoryBackup.getPlayer(playerName, Objects.requireNonNull(player.getServer()));
+        EnumMap<LogType, List<PlayerBackupData>> backups = ((PlayerBackupHolder) targetPlayer).getPlayerBackups();
 
-    static Item logTypeItem(LogType type) {
-        return switch (type) {
-            case JOIN -> Items.GREEN_BED;
-            case QUIT -> Items.FIREWORK_ROCKET;
-            case DEATH -> Items.IRON_SWORD;
-            case WORLD_CHANGE -> Items.END_PORTAL_FRAME;
-            case FORCE -> Items.STRUCTURE_VOID;
-        };
+        List<PlayerBackupData> backupList = (logType != null) ? backups.get(logType) :
+                backups.values().stream().flatMap(Collection::stream).collect(Collectors.toList());
+        backupList.sort(Comparator.comparing(PlayerBackupData::timestamp));
+        return backupList;
     }
 
 }

@@ -9,6 +9,7 @@ import edu.byu.minecraft.invbackup.data.LogType;
 import edu.byu.minecraft.invbackup.data.PlayerBackupData;
 import edu.byu.minecraft.invbackup.gui.AllBackupListGui;
 import edu.byu.minecraft.invbackup.gui.PlayerBackupListGui;
+import edu.byu.minecraft.invbackup.PlayerBackupHolder;
 import me.lucko.fabric.api.permissions.v0.Permissions;
 import net.minecraft.command.CommandRegistryAccess;
 import net.minecraft.command.argument.EntityArgumentType;
@@ -35,7 +36,10 @@ public class Commands {
                                 .suggests(SuggestionProviders::allPlayers)
                                 .executes(Commands::listPlayer)))
                 .then(literal("forcebackup").executes(Commands::forceBackupAll)
-                        .then(argument("player", EntityArgumentType.player()).executes(Commands::forceBackupPlayer))));
+                        .then(argument("player", EntityArgumentType.player()).executes(Commands::forceBackupPlayer)))
+                .then(literal("help").executes(Commands::help))
+                .executes(Commands::help)
+        );
     }
 
 
@@ -68,7 +72,7 @@ public class Commands {
             ServerPlayerEntity executor = context.getSource().getPlayer();
             for (ServerPlayerEntity player : executor.getServer().getPlayerManager().getPlayerList()) {
                 PlayerBackupData backupData = PlayerBackupData.forPlayer(player, LogType.FORCE);
-                InventoryBackup.data.addBackup(backupData);
+                ((PlayerBackupHolder) player).inventoryBackup$addBackup(backupData);
             }
             executor.sendMessage(Text.of("Backups created"));
         }
@@ -84,7 +88,7 @@ public class Commands {
             ServerPlayerEntity executor = context.getSource().getPlayer();
             ServerPlayerEntity target = EntityArgumentType.getPlayer(context, "player");
             PlayerBackupData backupData = PlayerBackupData.forPlayer(target, LogType.FORCE);
-            InventoryBackup.data.addBackup(backupData);
+            ((PlayerBackupHolder) target).inventoryBackup$addBackup(backupData);
             assert executor != null;
             executor.sendMessage(Text.of("Backup created"));
         }
@@ -92,6 +96,19 @@ public class Commands {
             InventoryBackup.LOGGER.error("Error creating backup for player {}",
                     EntityArgumentType.getPlayer(context, "player").getName(), e);
         }
+        return 0;
+    }
+
+    private static int help(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
+        ServerPlayerEntity executor = context.getSource().getPlayer();
+        assert executor != null;
+        executor.sendMessage(Text.of("""
+                Usage for /invbackup:
+                    /invbackup restore                  - Opens menu of all players to restore
+                    /invbackup restore <username>       - Opens menu of player with username
+                    /invbackup forcebackup              - Creates backups of all online players
+                    /invbackup forcebackup <username>   - Creates backups of player with username
+                """));
         return 0;
     }
 

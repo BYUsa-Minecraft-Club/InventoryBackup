@@ -1,6 +1,6 @@
 package edu.byu.minecraft.invbackup.mixin;
 
-import edu.byu.minecraft.InventoryBackup;
+import edu.byu.minecraft.invbackup.PlayerBackupHolder;
 import edu.byu.minecraft.invbackup.data.LogType;
 import edu.byu.minecraft.invbackup.data.PlayerBackupData;
 import net.minecraft.entity.damage.DamageSource;
@@ -11,14 +11,14 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(ServerPlayerEntity.class)
-public class ServerPlayerEntityMixin {
+public class ServerPlayerEntityDeathRecordingMixin {
 
     @Inject(method = "onDeath", at = @At("HEAD"))
     public void injectOnDeath(DamageSource damageSource, CallbackInfo ci) {
         ServerPlayerEntity player = ((ServerPlayerEntity) (Object) this);
         String deathMessage = player.getDamageTracker().getDeathMessage().getString();
         PlayerBackupData backupData = PlayerBackupData.forPlayer(player, LogType.DEATH, deathMessage);
-        InventoryBackup.data.addBackup(backupData);
+        ((PlayerBackupHolder) player).inventoryBackup$addBackup(backupData);
     }
 
 }
