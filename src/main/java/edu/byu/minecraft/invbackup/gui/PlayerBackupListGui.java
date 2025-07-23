@@ -75,6 +75,6 @@ public class PlayerBackupListGui extends PagedGui {
 
     private List<LogType> getLogTypes() {
         ServerPlayerEntity targetPlayer = InventoryBackup.getPlayer(playerName, player.getServer());
-        return new ArrayList<>(((PlayerBackupHolder) targetPlayer).getPlayerBackups().keySet());
+        return new ArrayList<>(((PlayerBackupHolder) targetPlayer).inventoryBackup$getPlayerBackups().keySet());
     }
 }

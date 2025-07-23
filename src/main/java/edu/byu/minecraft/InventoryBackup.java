@@ -55,20 +55,6 @@ public class InventoryBackup implements ModInitializer {
 
     private void serverStarted(MinecraftServer server) {
         data = GlobalSaveData.getServerState(server);
-        if(data.data != null) {
-            data.data.forEach((uuid, logTypeListEnumMap) -> {
-                String playerName = data.getPlayers().get(uuid);
-                if(playerName == null) {
-                    String log = "Could not find player with uuid:%s. Their backups:\n%s\n".formatted(uuid, logTypeListEnumMap);
-                    System.out.println(log);
-                    InventoryBackup.LOGGER.warn(log);
-                    return;
-                }
-                ServerPlayerEntity player = InventoryBackup.getPlayer(playerName, server);
-                ((PlayerBackupHolder) player).getPlayerBackups().putAll(logTypeListEnumMap);
-                InventoryBackup.savePlayerData(player);
-            });
-        }
     }
 
     private void entityUnload(Entity entity, ServerWorld world) {

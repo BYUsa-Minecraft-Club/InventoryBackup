@@ -20,8 +20,6 @@ import java.util.stream.Collectors;
 
 @Mixin(ServerPlayerEntity.class)
 public abstract class ServerPlayerEntityBackupMixin implements PlayerBackupHolder {
-    @Shadow public abstract boolean teleport(ServerWorld world, double destX, double destY, double destZ,
-                                             Set<PositionFlag> flags, float yaw, float pitch, boolean resetCamera);
 
     private static final String BACKUP_KEY = InventoryBackup.MOD_ID + "-playerBackups";
 
@@ -64,7 +62,7 @@ public abstract class ServerPlayerEntityBackupMixin implements PlayerBackupHolde
         }
     }
 
-    public EnumMap<LogType, List<PlayerBackupData>> getPlayerBackups() {
+    public EnumMap<LogType, List<PlayerBackupData>> inventoryBackup$getPlayerBackups() {
         return playerBackups;
     }
 }

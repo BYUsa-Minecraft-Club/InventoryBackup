@@ -5,11 +5,9 @@ import edu.byu.minecraft.invbackup.data.LogType;
 import edu.byu.minecraft.invbackup.data.PlayerBackupData;
 import edu.byu.minecraft.invbackup.PlayerBackupHolder;
 import net.minecraft.item.Item;
-import net.minecraft.item.Items;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 
-import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -86,7 +84,7 @@ public class TypedBackupListGui extends PagedGui {
 
     private List<PlayerBackupData> getData() {
         ServerPlayerEntity targetPlayer = InventoryBackup.getPlayer(playerName, Objects.requireNonNull(player.getServer()));
-        EnumMap<LogType, List<PlayerBackupData>> backups = ((PlayerBackupHolder) targetPlayer).getPlayerBackups();
+        EnumMap<LogType, List<PlayerBackupData>> backups = ((PlayerBackupHolder) targetPlayer).inventoryBackup$getPlayerBackups();
 
         List<PlayerBackupData> backupList = (logType != null) ? backups.get(logType) :
                 backups.values().stream().flatMap(Collection::stream).collect(Collectors.toList());

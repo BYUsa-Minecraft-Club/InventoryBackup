@@ -7,19 +7,17 @@ import net.minecraft.item.Items;
 
 public class Config {
 
-    public static GuiElementBuilder previousButton = GuiSlot.builder(Items.ARROW, "Previous Page");
+    public static final GuiElementBuilder PREVIOUS_BUTTON = GuiSlot.builder(Items.ARROW, "Previous Page");
 
-    public static GuiElementBuilder nextButton = GuiSlot.builder(Items.ARROW, "Next Page");
+    public static final GuiElementBuilder NEXT_BUTTON = GuiSlot.builder(Items.ARROW, "Next Page");
 
-    public static GuiElementBuilder backButton = GuiSlot.builder(Items.BARRIER, "Previous Menu");
+    public static final GuiElementBuilder BACK_BUTTON = GuiSlot.builder(Items.BARRIER, "Previous Menu");
 
     public static GuiElementBuilder teleportButton(String target) {
         return GuiSlot.builder(Items.ENDER_PEARL, "Teleport to " + target);
     }
 
-    public static GuiElementBuilder restoreButton = GuiSlot.builder(Items.LIME_DYE, "Restore Inventory");
-
-    public static GuiElementBuilder restoreOfflineButton = GuiSlot.builder(Items.LIGHT_GRAY_DYE, "Player Offline");
+    public static final GuiElementBuilder RESTORE_BUTTON = GuiSlot.builder(Items.LIME_DYE, "Restore Inventory");
 
     public static Item logTypeItem(LogType type) {
         return switch (type) {

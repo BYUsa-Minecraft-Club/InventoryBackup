@@ -36,10 +36,6 @@ public record GuiSlot(@Nullable GuiElementInterface element, @Nullable Slot slot
         return new GuiSlot(null, slot);
     }
 
-    public static GuiSlot of(ItemStack itemStack) {
-        return of(GuiElementBuilder.from(itemStack));
-    }
-
     public static GuiElementBuilder builder(Item base, String... text) {
         return builder(base.getDefaultStack(), text);
     }
@@ -58,7 +54,7 @@ public record GuiSlot(@Nullable GuiElementInterface element, @Nullable Slot slot
 
     public static GuiSlot nextPage(PagedGui gui) {
         if (gui.canNextPage()) {
-            return GuiSlot.of(Config.nextButton.setCallback((x, y, z) -> {
+            return GuiSlot.of(Config.NEXT_BUTTON.setCallback((x, y, z) -> {
                 PagedGui.playClickSound(gui.getPlayer());
                 gui.nextPage();
             }));
@@ -70,7 +66,7 @@ public record GuiSlot(@Nullable GuiElementInterface element, @Nullable Slot slot
 
     public static GuiSlot previousPage(PagedGui gui) {
         if (gui.canPreviousPage()) {
-            return GuiSlot.of(Config.previousButton.setCallback((x, y, z) -> {
+            return GuiSlot.of(Config.PREVIOUS_BUTTON.setCallback((x, y, z) -> {
                 PagedGui.playClickSound(gui.getPlayer());
                 gui.previousPage();
             }));
@@ -86,7 +82,7 @@ public record GuiSlot(@Nullable GuiElementInterface element, @Nullable Slot slot
 
 
     public static GuiSlot back(Runnable back) {
-        return GuiSlot.of(Config.backButton.setCallback((x, y, z, d) -> {
+        return GuiSlot.of(Config.BACK_BUTTON.setCallback((x, y, z, d) -> {
             PagedGui.playClickSound(d.getPlayer());
             back.run();
         }));
@@ -111,7 +107,7 @@ public record GuiSlot(@Nullable GuiElementInterface element, @Nullable Slot slot
     public static GuiSlot restore(MinecraftServer server, PlayerBackupData data) {
         String playerName = InventoryBackup.data.getPlayers().get(data.uuid());
         if(playerName == null) return GuiSlot.empty();
-        return GuiSlot.of(Config.restoreButton.setCallback(() -> {
+        return GuiSlot.of(Config.RESTORE_BUTTON.setCallback(() -> {
             ServerPlayerEntity target = InventoryBackup.getPlayer(playerName, server);
             data.restore(target);
             InventoryBackup.savePlayerData(target);

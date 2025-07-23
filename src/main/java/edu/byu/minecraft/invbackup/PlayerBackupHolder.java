@@ -8,5 +8,5 @@ import java.util.List;
 
 public interface PlayerBackupHolder {
     void inventoryBackup$addBackup(PlayerBackupData backup);
-    EnumMap<LogType, List<PlayerBackupData>> getPlayerBackups();
+    EnumMap<LogType, List<PlayerBackupData>> inventoryBackup$getPlayerBackups();
 }
