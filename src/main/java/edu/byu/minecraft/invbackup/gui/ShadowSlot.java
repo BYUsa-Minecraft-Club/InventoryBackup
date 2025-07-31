@@ -12,11 +12,6 @@ public class ShadowSlot extends Slot {
         this.backupItem = backupItem;
     }
 
-    private boolean showBackupItem() {
-        ItemStack stack = inventory.getStack(getIndex());
-        return stack == null || stack.isEmpty();
-    }
-
     @Override
     public ItemStack getStack() {
         ItemStack stack = super.getStack();
