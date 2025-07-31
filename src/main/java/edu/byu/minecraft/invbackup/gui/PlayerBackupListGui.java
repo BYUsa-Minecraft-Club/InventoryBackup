@@ -20,8 +20,8 @@ public class PlayerBackupListGui extends PagedGui {
         super(player);
         this.targetUUID = uuid;
         this.playerName = playerName;
-        this.setTitle(Text.of(playerName + "'s backups"));
-        this.types = new ArrayList<>(InventoryBackup.data.getData().get(uuid).keySet());
+        this.setTitle(Text.of(playerName + "'s Backups"));
+        this.types = getLogTypes();
         this.updateDisplay();
     }
 
@@ -35,17 +35,17 @@ public class PlayerBackupListGui extends PagedGui {
         if (id < this.types.size()) {
             LogType logType = types.get(id);
 
-            var element = GuiSlot.builder(TypedBackupListGui.logTypeItem(logType), logType.name())
+            var element = GuiSlot.builder(GuiConfig.logTypeItem(logType), GuiUtils.readableLogType(logType) + " Backups")
                     .setCallback((index, type, action) -> new TypedBackupListGui(targetUUID, playerName, logType, player).open());
 
             return GuiSlot.of(element);
         }
         else if (id == 9) {
-            return GuiSlot.of(GuiSlot.builder(GuiUtils.getPlayerHead(targetUUID, playerName), "LIVE")
+            return GuiSlot.of(GuiSlot.builder(GuiUtils.getPlayerHead(targetUUID, playerName), "Live Inventory")
                     .setCallback((index, type, action) -> new LiveInventoryGui(playerName, this, player).open()));
         }
         else if (id == 10) {
-            var element = GuiSlot.builder(Items.CHEST, "ALL")
+            var element = GuiSlot.builder(Items.CHEST, "All Backups")
                     .setCallback((index, type, action) -> new TypedBackupListGui(targetUUID, playerName, null, player).open());
 
             return GuiSlot.of(element);
@@ -66,9 +66,13 @@ public class PlayerBackupListGui extends PagedGui {
     public void onTick() {
         this.ticker++;
         if (this.ticker % 100 == 0) {
-            this.types = new ArrayList<>(InventoryBackup.data.getData().get(targetUUID).keySet());
+            this.types = getLogTypes();
             this.updateDisplay();
         }
         super.onTick();
+    }
+
+    private List<LogType> getLogTypes() {
+        return new ArrayList<>(InventoryBackup.data.getData().get(targetUUID).keySet());
     }
 }

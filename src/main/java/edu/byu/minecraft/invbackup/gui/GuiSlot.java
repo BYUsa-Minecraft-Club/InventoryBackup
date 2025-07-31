@@ -5,8 +5,10 @@ import edu.byu.minecraft.invbackup.data.PlayerBackupData;
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
 import eu.pb4.sgui.api.elements.GuiElementBuilderInterface;
 import eu.pb4.sgui.api.elements.GuiElementInterface;
+import net.minecraft.component.DataComponentTypes;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.Items;
 import net.minecraft.network.packet.s2c.play.PositionFlag;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.RegistryKeys;
@@ -25,7 +27,12 @@ import java.util.List;
 
 public record GuiSlot(@Nullable GuiElementInterface element, @Nullable Slot slot) {
 
-    static final GuiSlot EMPTY = GuiSlot.of(GuiElementBuilder.from(ItemStack.EMPTY));
+    static final GuiSlot EMPTY;
+    static {
+        ItemStack emptyStack = new ItemStack(Items.BLACK_STAINED_GLASS_PANE);
+        emptyStack.set(DataComponentTypes.ITEM_NAME, Text.empty());
+        EMPTY = GuiSlot.of(GuiElementBuilder.from(emptyStack));
+    }
 
 
     public static GuiSlot of(GuiElementBuilderInterface<?> element) {
@@ -54,7 +61,7 @@ public record GuiSlot(@Nullable GuiElementInterface element, @Nullable Slot slot
 
     public static GuiSlot nextPage(PagedGui gui) {
         if (gui.canNextPage()) {
-            return GuiSlot.of(Config.nextButton.setCallback((x, y, z) -> {
+            return GuiSlot.of(GuiConfig.NEXT_PAGE_BUTTON.setCallback((x, y, z) -> {
                 PagedGui.playClickSound(gui.getPlayer());
                 gui.nextPage();
             }));
@@ -66,7 +73,7 @@ public record GuiSlot(@Nullable GuiElementInterface element, @Nullable Slot slot
 
     public static GuiSlot previousPage(PagedGui gui) {
         if (gui.canPreviousPage()) {
-            return GuiSlot.of(Config.previousButton.setCallback((x, y, z) -> {
+            return GuiSlot.of(GuiConfig.PREVIOUS_PAGE_BUTTON.setCallback((x, y, z) -> {
                 PagedGui.playClickSound(gui.getPlayer());
                 gui.previousPage();
             }));
@@ -82,7 +89,7 @@ public record GuiSlot(@Nullable GuiElementInterface element, @Nullable Slot slot
 
 
     public static GuiSlot back(Runnable back) {
-        return GuiSlot.of(Config.backButton.setCallback((x, y, z, d) -> {
+        return GuiSlot.of(GuiConfig.PREVIOUS_MENU_BUTTON.setCallback((x, y, z, d) -> {
             PagedGui.playClickSound(d.getPlayer());
             back.run();
         }));
@@ -90,7 +97,7 @@ public record GuiSlot(@Nullable GuiElementInterface element, @Nullable Slot slot
 
 
     public static GuiSlot teleport(ServerPlayerEntity player, Identifier world, Vec3d pos, String target) {
-        return GuiSlot.of(Config.teleportButton(target).setCallback(() -> {
+        return GuiSlot.of(GuiConfig.teleportButton(target).setCallback(() -> {
             PagedGui.playClickSound(player);
             MinecraftServer server = player.getServer();
             if (server == null) return;
@@ -107,7 +114,7 @@ public record GuiSlot(@Nullable GuiElementInterface element, @Nullable Slot slot
     public static GuiSlot restore(MinecraftServer server, PlayerBackupData data) {
         String playerName = InventoryBackup.data.getPlayers().get(data.uuid());
         if(playerName == null) return GuiSlot.empty();
-        return GuiSlot.of(Config.restoreButton.setCallback(() -> {
+        return GuiSlot.of(GuiConfig.RESTORE_INVENTORY_BUTTON.setCallback(() -> {
             ServerPlayerEntity target = InventoryBackup.getPlayer(playerName, server);
             data.restore(target);
             InventoryBackup.savePlayerData(target);

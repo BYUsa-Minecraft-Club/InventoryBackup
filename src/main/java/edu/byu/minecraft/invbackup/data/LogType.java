@@ -1,9 +1,13 @@
 package edu.byu.minecraft.invbackup.data;
 
-public enum LogType { 
+import com.mojang.serialization.Codec;
+
+public enum LogType {
     JOIN,
     QUIT,
     DEATH,
     WORLD_CHANGE,
-    FORCE
+    FORCE;
+
+    public static final Codec<LogType> CODEC = Codec.STRING.xmap(LogType::valueOf, LogType::name);
 }

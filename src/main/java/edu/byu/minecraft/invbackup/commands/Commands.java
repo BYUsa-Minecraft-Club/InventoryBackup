@@ -35,7 +35,10 @@ public class Commands {
                                 .suggests(SuggestionProviders::allPlayers)
                                 .executes(Commands::listPlayer)))
                 .then(literal("forcebackup").executes(Commands::forceBackupAll)
-                        .then(argument("player", EntityArgumentType.player()).executes(Commands::forceBackupPlayer))));
+                        .then(argument("player", EntityArgumentType.player()).executes(Commands::forceBackupPlayer)))
+                .then(literal("help").executes(Commands::help))
+                .executes(Commands::help)
+        );
     }
 
 
@@ -92,6 +95,19 @@ public class Commands {
             InventoryBackup.LOGGER.error("Error creating backup for player {}",
                     EntityArgumentType.getPlayer(context, "player").getName(), e);
         }
+        return 0;
+    }
+
+    private static int help(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
+        ServerPlayerEntity executor = context.getSource().getPlayer();
+        assert executor != null;
+        executor.sendMessage(Text.of("""
+                Usage for /invbackup:
+                    /invbackup restore                  - Opens menu of all players to restore
+                    /invbackup restore <username>       - Opens menu of player with username
+                    /invbackup forcebackup              - Creates backups of all online players
+                    /invbackup forcebackup <username>   - Creates backups of player with username
+                """));
         return 0;
     }
 

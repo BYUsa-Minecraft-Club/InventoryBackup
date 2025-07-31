@@ -19,7 +19,7 @@ public class LiveInventoryGui extends PagedGui {
     public LiveInventoryGui(String playerName, GuiInterface previousUi, ServerPlayerEntity player) {
         super(player);
         this.playerName = playerName;
-        this.setTitle(Text.of(String.format("%s's live inventory", playerName)));
+        this.setTitle(Text.of(String.format("%s's Live Inventory", playerName)));
         this.previousUi = previousUi;
         this.target = InventoryBackup.getPlayer(playerName, Objects.requireNonNull(player.getServer()));
         this.updateDisplay();
@@ -33,13 +33,11 @@ public class LiveInventoryGui extends PagedGui {
 
     @Override
     protected GuiSlot getElement(int id) {
-        if(id < 4) {
-            return GuiSlot.of(new Slot(target.getInventory(), 36 + 3 - id, 0, 0)); //3 - id -> helmet first
-        }
-        else if(id == 8) {
-            return GuiSlot.of(new Slot(target.getInventory(), 40, 0, 0));
-        }
-        else if(id < 9) {
+        if (id < 4) {                                                        //3 - id -> helmet first
+            return GuiSlot.of(new ShadowSlot(target.getInventory(), 36 + 3 - id, 0, 0, GuiUtils.getShadowstack(id)));
+        } else if (id == 8) {
+            return GuiSlot.of(new ShadowSlot(target.getInventory(), 40, 0, 0, GuiUtils.getShadowstack(id)));
+        } else if (id < 9) {
             return GuiSlot.empty();
         }
         else if(id < 36) {

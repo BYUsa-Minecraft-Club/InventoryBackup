@@ -1,24 +1,42 @@
 package edu.byu.minecraft.invbackup.data;
 
 
-import com.mojang.serialization.DynamicOps;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import edu.byu.minecraft.InventoryBackup;
-import net.minecraft.inventory.Inventories;
 import net.minecraft.inventory.Inventory;
-import net.minecraft.inventory.SimpleInventory;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtOps;
-import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.Uuids;
 import net.minecraft.util.math.Vec3d;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 
-public record PlayerBackupData(UUID uuid, Long timestamp, SimpleInventory main, SimpleInventory enderChest,
+public record PlayerBackupData(UUID uuid, Long timestamp, Map<Integer, ItemStack> main, Map<Integer, ItemStack> enderChest,
                                int experienceLevel, int totalExperience, float experienceProgress, Identifier world,
-                               Vec3d pos, LogType logType, String deathReason) {
+                               Vec3d pos, LogType logType, Optional<String> deathReason) {
+
+    private static final Codec<Map<Integer, ItemStack>> INT_ITEMSTACK_MAP_CODEC =
+            Codec.unboundedMap(Codec.STRING.xmap(Integer::parseInt, String::valueOf),
+            ItemStack.CODEC);
+
+    public static final Codec<PlayerBackupData> CODEC = RecordCodecBuilder.create(instance -> instance.group(
+            Uuids.CODEC.fieldOf("uuid").forGetter(PlayerBackupData::uuid),
+            Codec.LONG.fieldOf("timestamp").forGetter(PlayerBackupData::timestamp),
+            INT_ITEMSTACK_MAP_CODEC.fieldOf("main").forGetter(PlayerBackupData::main),
+            INT_ITEMSTACK_MAP_CODEC.fieldOf("enderChest").forGetter(PlayerBackupData::enderChest),
+            Codec.INT.fieldOf("experienceLevel").forGetter(PlayerBackupData::experienceLevel),
+            Codec.INT.fieldOf("totalExperience").forGetter(PlayerBackupData::totalExperience),
+            Codec.FLOAT.fieldOf("experienceProgress").forGetter(PlayerBackupData::experienceProgress),
+            Identifier.CODEC.fieldOf("world").forGetter(PlayerBackupData::world),
+            Vec3d.CODEC.fieldOf("pos").forGetter(PlayerBackupData::pos),
+            LogType.CODEC.fieldOf("logType").forGetter(PlayerBackupData::logType),
+            Codec.STRING.optionalFieldOf("deathReason").forGetter(PlayerBackupData::deathReason)
+        ).apply(instance, PlayerBackupData::new));
 
 
     public static PlayerBackupData forPlayer(ServerPlayerEntity player, LogType logType) {
@@ -27,10 +45,22 @@ public record PlayerBackupData(UUID uuid, Long timestamp, SimpleInventory main, 
 
 
     public static PlayerBackupData forPlayer(ServerPlayerEntity player, LogType logType, String deathReason) {
-        return new PlayerBackupData(player.getUuid(), System.currentTimeMillis(), copy(player.getInventory()),
-                copy(player.getEnderChestInventory()), player.experienceLevel, player.totalExperience,
-                player.experienceProgress, player.getWorld().getRegistryKey().getValue(), player.getPos(), logType,
-                deathReason);
+        return new PlayerBackupData(player.getUuid(), System.currentTimeMillis(),
+                getStacks(player.getInventory()), getStacks(player.getEnderChestInventory()),
+                player.experienceLevel, player.totalExperience, player.experienceProgress,
+                player.getWorld().getRegistryKey().getValue(), player.getPos(), logType, Optional.ofNullable(deathReason));
+    }
+
+    private static Map<Integer, ItemStack> getStacks(Iterable<ItemStack> iterable) {
+        Map<Integer, ItemStack> output = new HashMap<>();
+        int i = 0;
+        for(ItemStack itemStack : iterable) {
+            if(!itemStack.isEmpty()) {
+                output.put(i, itemStack.copy());
+            }
+            i++;
+        }
+        return output;
     }
 
     public static PlayerBackupData copy(PlayerBackupData copy) {
@@ -39,39 +69,6 @@ public record PlayerBackupData(UUID uuid, Long timestamp, SimpleInventory main, 
                 copy.logType(), copy.deathReason());
     }
 
-    public NbtCompound toNbt(RegistryWrapper.WrapperLookup lookup) {
-        NbtCompound nbtCompound = new NbtCompound();
-        nbtCompound.putString("uuid", uuid.toString());
-        nbtCompound.putLong("timestamp", timestamp);
-
-        nbtCompound.put("main", invToNbt(main, lookup));
-        nbtCompound.put("enderChest", invToNbt(enderChest, lookup));
-
-        nbtCompound.putInt("experienceLevel", experienceLevel);
-        nbtCompound.putInt("totalExperience", totalExperience);
-        nbtCompound.putFloat("experienceProgress", experienceProgress);
-
-        nbtCompound.putString("world", world.toString());
-        nbtCompound.putDouble("xpos", pos.getX());
-        nbtCompound.putDouble("ypos", pos.getY());
-        nbtCompound.putDouble("zpos", pos.getZ());
-        nbtCompound.putString("logType", logType.name());
-        if (deathReason != null) nbtCompound.putString("deathReason", deathReason);
-
-        return nbtCompound;
-    }
-
-    private NbtCompound invToNbt(SimpleInventory inv, RegistryWrapper.WrapperLookup lookup) {
-        NbtCompound nbtCompound = new NbtCompound();
-        nbtCompound.putInt("size", inv.size());
-        for (int i = 0; i < inv.size(); i++) {
-            ItemStack itemStack = inv.getStack(i);
-            if(!itemStack.isEmpty()) {
-                nbtCompound.put(String.valueOf(i), ItemStack.CODEC.encode(itemStack, NbtOps.INSTANCE, new NbtCompound()).getOrThrow());
-            }
-        }
-        return nbtCompound;
-    }
 
     public void restore(ServerPlayerEntity targetPlayer) {
         InventoryBackup.data.addBackup(forPlayer(targetPlayer, LogType.FORCE));
@@ -83,17 +80,10 @@ public record PlayerBackupData(UUID uuid, Long timestamp, SimpleInventory main, 
         targetPlayer.setExperiencePoints((int) (experienceProgress * targetPlayer.getNextLevelExperience()));
     }
 
-    private static SimpleInventory copy(Inventory from) {
-        SimpleInventory inventory = new SimpleInventory(from.size());
-        for (int i = 0; i < from.size(); i++) {
-            inventory.setStack(i, from.getStack(i).copy());
-        }
-        return inventory;
-    }
-
-    private void restore(SimpleInventory source, Inventory target) {
-        for (int i = 0; i < source.size(); i++) {
-            target.setStack(i, source.getHeldStacks().get(i).copy());
+    private void restore(Map<Integer, ItemStack> source, Inventory target) {
+        for (int i = 0; i < target.size(); i++) {
+            ItemStack stack = source.getOrDefault(i, ItemStack.EMPTY);
+            target.setStack(i, stack.copy());
         }
     }
 }
