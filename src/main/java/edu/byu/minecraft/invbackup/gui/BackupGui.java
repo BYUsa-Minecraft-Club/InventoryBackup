@@ -40,16 +40,18 @@ public class BackupGui extends PagedGui {
     @Override
     protected GuiSlot getElement(int id) {
         ItemStack itemStack;
-        if(id < 9) {
-            if (id < 4) { //armor
-                itemStack = playerBackupData.main().get(39 - id);
-            } else if (id == 8) { //offhand
-                itemStack = playerBackupData.main().get(40);
-            } else {
-                return GuiSlot.EMPTY;
-            }
-            return GuiSlot.of(new Slot(new SimpleInventory(itemStack != null ? itemStack.copy() : ItemStack.EMPTY), 0, 0, 0));
+        if (id < 4) { //armor
+            itemStack = playerBackupData.main().get(39 - id);
+        } else if (id == 8) { //offhand
+            itemStack = playerBackupData.main().get(40);
+        } else if (id == 4) {
+            return GuiSlot.of(GuiElementBuilder.from(GuiSlot.EMPTY_STACK).setName(Text.of("← Armor ←")));
+        } else if (id == 7) {
+            return GuiSlot.of(GuiElementBuilder.from(GuiSlot.EMPTY_STACK).setName(Text.of("→ Offhand →")));
+        } else if(id < 9)  {
+            return GuiSlot.EMPTY;
         }
+
         else if(id < 36) {
             itemStack = playerBackupData.main().get(id);
         }
@@ -71,7 +73,7 @@ public class BackupGui extends PagedGui {
         return switch (id) {
             case 0 -> GuiSlot.back(previousUi::open);
             case 2 -> viewInventory();
-            case 4 -> GuiSlot.restore(Objects.requireNonNull(player.getServer()), playerBackupData);
+            case 4 -> GuiSlot.restore(Objects.requireNonNull(player.getEntityWorld().getServer()), playerBackupData);
             case 6 -> viewEnderChest();
             case 7 -> GuiSlot.of(GuiSlot.builder(GuiUtils.getPlayerHead(targetUUID, playerName),
                     GuiUtils.getBackupDetails(playerName, playerBackupData)));

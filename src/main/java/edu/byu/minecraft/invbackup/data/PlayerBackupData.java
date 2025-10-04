@@ -48,7 +48,8 @@ public record PlayerBackupData(UUID uuid, Long timestamp, Map<Integer, ItemStack
         return new PlayerBackupData(player.getUuid(), System.currentTimeMillis(),
                 getStacks(player.getInventory()), getStacks(player.getEnderChestInventory()),
                 player.experienceLevel, player.totalExperience, player.experienceProgress,
-                player.getWorld().getRegistryKey().getValue(), player.getPos(), logType, Optional.ofNullable(deathReason));
+                player.getEntityWorld().getRegistryKey().getValue(), player.getEntityPos(), logType,
+                Optional.ofNullable(deathReason));
     }
 
     private static Map<Integer, ItemStack> getStacks(Iterable<ItemStack> iterable) {

@@ -7,6 +7,6 @@ import org.spongepowered.asm.mixin.gen.Invoker;
 
 @Mixin(PlayerManager.class)
 public interface PlayerManagerAccessor {
-    @Invoker
+    @Invoker("savePlayerData")
     public void callSavePlayerData(ServerPlayerEntity player);
 }

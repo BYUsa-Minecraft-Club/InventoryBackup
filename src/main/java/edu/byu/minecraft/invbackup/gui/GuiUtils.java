@@ -17,7 +17,7 @@ public class GuiUtils {
     static ItemStack getPlayerHead(UUID uuid, String playerName) {
         ItemStack playerHead = Items.PLAYER_HEAD.getDefaultStack();
         GameProfile profile = new GameProfile(uuid, playerName);
-        ProfileComponent pc = new ProfileComponent(Optional.empty(), Optional.of(uuid), profile.getProperties());
+        ProfileComponent pc = ProfileComponent.ofDynamic(uuid);
         playerHead.set(DataComponentTypes.PROFILE, pc);
         return playerHead;
     }

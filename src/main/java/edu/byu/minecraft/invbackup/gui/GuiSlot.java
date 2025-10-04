@@ -28,10 +28,11 @@ import java.util.List;
 public record GuiSlot(@Nullable GuiElementInterface element, @Nullable Slot slot) {
 
     static final GuiSlot EMPTY;
+    static final ItemStack EMPTY_STACK;
     static {
-        ItemStack emptyStack = new ItemStack(Items.BLACK_STAINED_GLASS_PANE);
-        emptyStack.set(DataComponentTypes.ITEM_NAME, Text.empty());
-        EMPTY = GuiSlot.of(GuiElementBuilder.from(emptyStack));
+        EMPTY_STACK = new ItemStack(Items.BLACK_STAINED_GLASS_PANE);
+        EMPTY_STACK.set(DataComponentTypes.ITEM_NAME, Text.empty());
+        EMPTY = GuiSlot.of(GuiElementBuilder.from(EMPTY_STACK).hideTooltip().hideDefaultTooltip());
     }
 
 
@@ -99,12 +100,10 @@ public record GuiSlot(@Nullable GuiElementInterface element, @Nullable Slot slot
     public static GuiSlot teleport(ServerPlayerEntity player, Identifier world, Vec3d pos, String target) {
         return GuiSlot.of(GuiConfig.teleportButton(target).setCallback(() -> {
             PagedGui.playClickSound(player);
-            MinecraftServer server = player.getServer();
-            if (server == null) return;
-            ServerWorld toWorld = server.getWorld(RegistryKey.of(RegistryKeys.WORLD, world));
-            if (toWorld == null) return;
+            ServerWorld destWorld = player.getEntityWorld().getServer().getWorld(RegistryKey.of(RegistryKeys.WORLD, world));
+            if (destWorld == null) return;
 
-            player.teleport(toWorld, pos.getX(), pos.getY(), pos.getZ(), PositionFlag.DELTA, 0, 0, false);
+            player.teleport(destWorld, pos.getX(), pos.getY(), pos.getZ(), PositionFlag.DELTA, 0, 0, false);
             player.teleport(pos.getX(), pos.getY(), pos.getZ(), false);
             PagedGui.playClickSound(player, SoundEvents.ITEM_CHORUS_FRUIT_TELEPORT);
         }));

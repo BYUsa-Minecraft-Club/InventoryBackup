@@ -20,16 +20,6 @@ class GuiConfig {
 
     static final GuiElementBuilder RESTORE_INVENTORY_BUTTON = GuiSlot.builder(Items.LIME_DYE, "Restore Inventory");
 
-    static final ItemStack EMPTY_HELMET_SLOT;
-
-    static final ItemStack EMPTY_CHESTPLATE_SLOT;
-
-    static final ItemStack EMPTY_LEGGINGS_SLOT;
-
-    static final ItemStack EMPTY_BOOTS_SLOT;
-
-    static final ItemStack EMPTY_OFFHAND_SLOT;
-
     static GuiElementBuilder teleportButton(String target) {
         return GuiSlot.builder(Items.ENDER_PEARL, "Teleport to " + target);
     }
@@ -42,26 +32,6 @@ class GuiConfig {
             case WORLD_CHANGE -> Items.END_PORTAL_FRAME;
             case FORCE -> Items.STRUCTURE_VOID;
         };
-    }
-
-    static {
-        int byuRoyalBlue = 18362;
-        EMPTY_HELMET_SLOT = new ItemStack(Items.LEATHER_HELMET);
-        EMPTY_HELMET_SLOT.set(DataComponentTypes.ITEM_NAME, Text.of("Empty Helmet Slot"));
-        EMPTY_HELMET_SLOT.set(DataComponentTypes.DYED_COLOR, new DyedColorComponent(byuRoyalBlue));
-        EMPTY_CHESTPLATE_SLOT = new ItemStack(Items.LEATHER_CHESTPLATE);
-        EMPTY_CHESTPLATE_SLOT.set(DataComponentTypes.ITEM_NAME, Text.of("Empty Chestplate Slot"));
-        EMPTY_CHESTPLATE_SLOT.set(DataComponentTypes.DYED_COLOR, new DyedColorComponent(byuRoyalBlue));
-        EMPTY_LEGGINGS_SLOT = new ItemStack(Items.LEATHER_LEGGINGS);
-        EMPTY_LEGGINGS_SLOT.set(DataComponentTypes.ITEM_NAME, Text.of("Empty Leggings Slot"));
-        EMPTY_LEGGINGS_SLOT.set(DataComponentTypes.DYED_COLOR, new DyedColorComponent(byuRoyalBlue));
-        EMPTY_BOOTS_SLOT = new ItemStack(Items.LEATHER_BOOTS);
-        EMPTY_BOOTS_SLOT.set(DataComponentTypes.ITEM_NAME, Text.of("Empty Boots Slot"));
-        EMPTY_BOOTS_SLOT.set(DataComponentTypes.DYED_COLOR, new DyedColorComponent(byuRoyalBlue));
-
-        EMPTY_OFFHAND_SLOT = new ItemStack(Items.SHIELD);
-        EMPTY_OFFHAND_SLOT.set(DataComponentTypes.BASE_COLOR, DyeColor.BLUE);
-        EMPTY_OFFHAND_SLOT.set(DataComponentTypes.CUSTOM_NAME, Text.of("Empty Offhand Slot"));
     }
 
 }

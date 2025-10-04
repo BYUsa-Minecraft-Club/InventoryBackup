@@ -11,19 +11,19 @@ import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.minecraft.entity.Entity;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.network.packet.c2s.common.SyncedClientOptions;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.PlayerConfigEntry;
 import net.minecraft.server.PlayerManager;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
-import net.minecraft.storage.ReadView;
+import net.minecraft.storage.NbtReadView;
 import net.minecraft.util.ErrorReporter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
 import java.util.UUID;
 
 public class InventoryBackup implements ModInitializer {
@@ -85,14 +85,15 @@ public class InventoryBackup implements ModInitializer {
             }
             GameProfile profile = new GameProfile(uuid, playerName);
             requestedPlayer = new ServerPlayerEntity(server, server.getOverworld(), profile, SyncedClientOptions.createDefault());
-            Optional<ReadView> readViewOpt = server.getPlayerManager().loadPlayerData(requestedPlayer, new ErrorReporter.Impl(() -> MOD_ID));
+            NbtCompound nbt = server.getPlayerManager().loadPlayerData(new PlayerConfigEntry(profile)).orElseThrow();
+            requestedPlayer.readData(NbtReadView.create(new ErrorReporter.Impl(() -> MOD_ID), server.getRegistryManager(), nbt));
         }
 
         return requestedPlayer;
     }
 
     public static void savePlayerData(ServerPlayerEntity player) {
-        PlayerManager pm = Objects.requireNonNull(player.getServer()).getPlayerManager();
+        PlayerManager pm = player.getEntityWorld().getServer().getPlayerManager();
         if(!pm.getPlayerList().contains(player)) {
             ((PlayerManagerAccessor) pm).callSavePlayerData(player);
         }

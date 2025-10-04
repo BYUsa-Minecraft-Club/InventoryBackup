@@ -57,7 +57,7 @@ public class Commands {
         ServerPlayerEntity executor = context.getSource().getPlayer();
         ServerPlayerEntity target = getPlayer(context);
         try {
-            new PlayerBackupListGui(target.getUuid(), target.getGameProfile().getName(), executor).open();
+            new PlayerBackupListGui(target.getUuid(), target.getGameProfile().name(), executor).open();
         } catch (Exception e) {
             InventoryBackup.LOGGER.error("Error listing backups for player {}",
                     EntityArgumentType.getPlayer(context, "player").getName(), e);
@@ -68,12 +68,11 @@ public class Commands {
 
     private static int forceBackupAll(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
         try {
-            ServerPlayerEntity executor = context.getSource().getPlayer();
-            for (ServerPlayerEntity player : executor.getServer().getPlayerManager().getPlayerList()) {
+            for (ServerPlayerEntity player : context.getSource().getServer().getPlayerManager().getPlayerList()) {
                 PlayerBackupData backupData = PlayerBackupData.forPlayer(player, LogType.FORCE);
                 InventoryBackup.data.addBackup(backupData);
             }
-            executor.sendMessage(Text.of("Backups created"));
+            context.getSource().sendMessage(Text.of("Backups created"));
         }
         catch (Exception e) {
             InventoryBackup.LOGGER.error("Error creating backups for all players", e);

@@ -25,7 +25,7 @@ public class LiveInventoryGui extends PagedGui {
         this.playerName = playerName;
         this.setTitle(Text.of(String.format("%s's Live Inventory", playerName)));
         this.previousUi = previousUi;
-        this.target = InventoryBackup.getPlayer(playerName, Objects.requireNonNull(player.getServer()));
+        this.target = InventoryBackup.getPlayer(playerName, player.getEntityWorld().getServer());
         this.updateDisplay();
     }
 
@@ -41,6 +41,10 @@ public class LiveInventoryGui extends PagedGui {
             return GuiSlot.of(new Slot(target.getInventory(), 36 + 3 - id, 0, 0));
         } else if (id == 8) {
             return GuiSlot.of(new Slot(target.getInventory(), 40, 0, 0));
+        } else if (id == 4) {
+            return GuiSlot.of(GuiElementBuilder.from(GuiSlot.EMPTY_STACK).setName(Text.of("← Armor ←")));
+        } else if (id == 7) {
+            return GuiSlot.of(GuiElementBuilder.from(GuiSlot.EMPTY_STACK).setName(Text.of("→ Offhand →")));
         } else if (id < 9) {
             return GuiSlot.empty();
         }
@@ -65,7 +69,8 @@ public class LiveInventoryGui extends PagedGui {
             });
             case 2 -> viewInventory();
             case 6 -> viewEnderChest();
-            case 8 -> GuiSlot.teleport(player, player.getWorld().getRegistryKey().getValue(), player.getPos(), "Player");
+            case 8 -> GuiSlot.teleport(player, player.getEntityWorld().getRegistryKey().getValue(),
+                    player.getEntityPos(), "Player");
             default ->  GuiSlot.empty();
         };
     }
