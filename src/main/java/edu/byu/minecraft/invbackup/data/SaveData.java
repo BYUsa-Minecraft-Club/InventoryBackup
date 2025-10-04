@@ -49,7 +49,12 @@ public class SaveData extends PersistentState {
     }
 
     public void checkPlayer(ServerPlayerEntity player) {
-        players.put(player.getUuid(), player.getGameProfile().getName());
+        UUID playerUUID = player.getUuid();
+        String playerName = player.getGameProfile().getName();
+        if(!players.containsKey(playerUUID) || !players.get(playerUUID).equals(playerName)) {
+            players.put(playerUUID, playerName);
+            markDirty();
+        }
     }
 
 
