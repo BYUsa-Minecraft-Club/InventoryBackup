@@ -39,15 +39,4 @@ public class GuiUtils {
         String replaced = logType.name().replace("_", " ");
         return Character.toUpperCase(replaced.charAt(0)) + replaced.substring(1).toLowerCase();
     }
-
-    static ItemStack getShadowstack(int elementId) {
-        return switch (elementId) {
-            case 0 -> GuiConfig.EMPTY_HELMET_SLOT;
-            case 1 -> GuiConfig.EMPTY_CHESTPLATE_SLOT;
-            case 2 -> GuiConfig.EMPTY_LEGGINGS_SLOT;
-            case 3 -> GuiConfig.EMPTY_BOOTS_SLOT;
-            case 8 -> GuiConfig.EMPTY_OFFHAND_SLOT;
-            default -> throw new IllegalStateException("Unexpected value: " + elementId);
-        };
-    }
 }

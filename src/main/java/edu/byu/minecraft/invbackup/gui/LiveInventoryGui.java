@@ -1,10 +1,14 @@
 package edu.byu.minecraft.invbackup.gui;
 
 import edu.byu.minecraft.InventoryBackup;
+import eu.pb4.sgui.api.ClickType;
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
+import eu.pb4.sgui.api.elements.GuiElementInterface;
 import eu.pb4.sgui.api.gui.GuiInterface;
+import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.screen.slot.Slot;
+import net.minecraft.screen.slot.SlotActionType;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 
@@ -34,9 +38,9 @@ public class LiveInventoryGui extends PagedGui {
     @Override
     protected GuiSlot getElement(int id) {
         if (id < 4) {                                                        //3 - id -> helmet first
-            return GuiSlot.of(new ShadowSlot(target.getInventory(), 36 + 3 - id, 0, 0, GuiUtils.getShadowstack(id)));
+            return GuiSlot.of(new Slot(target.getInventory(), 36 + 3 - id, 0, 0));
         } else if (id == 8) {
-            return GuiSlot.of(new ShadowSlot(target.getInventory(), 40, 0, 0, GuiUtils.getShadowstack(id)));
+            return GuiSlot.of(new Slot(target.getInventory(), 40, 0, 0));
         } else if (id < 9) {
             return GuiSlot.empty();
         }

@@ -48,8 +48,7 @@ public class BackupGui extends PagedGui {
             } else {
                 return GuiSlot.EMPTY;
             }
-            return GuiSlot.of(new ShadowSlot(new SimpleInventory(itemStack != null ? itemStack.copy() : ItemStack.EMPTY),
-                    0, 0, 0, GuiUtils.getShadowstack(id)));
+            return GuiSlot.of(new Slot(new SimpleInventory(itemStack != null ? itemStack.copy() : ItemStack.EMPTY), 0, 0, 0));
         }
         else if(id < 36) {
             itemStack = playerBackupData.main().get(id);

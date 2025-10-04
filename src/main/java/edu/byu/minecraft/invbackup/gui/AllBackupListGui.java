@@ -6,10 +6,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 public class AllBackupListGui extends PagedGui {
     private int ticker = 0;
@@ -66,7 +63,7 @@ public class AllBackupListGui extends PagedGui {
 
     private List<Map.Entry<UUID, String>> getPlayers() {
         List<Map.Entry<UUID, String>> ret = new ArrayList<>(InventoryBackup.data.getPlayers().entrySet());
-        ret.sort(Map.Entry.comparingByValue());
+        ret.sort((o1, o2) -> o1.getValue().compareToIgnoreCase(o2.getValue()));
         return ret;
     }
 }
