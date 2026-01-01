@@ -10,12 +10,14 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.network.packet.s2c.play.PositionFlag;
+import net.minecraft.registry.Registries;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.screen.slot.Slot;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.sound.SoundEvent;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
@@ -105,7 +107,7 @@ public record GuiSlot(@Nullable GuiElementInterface element, @Nullable Slot slot
 
             player.teleport(destWorld, pos.getX(), pos.getY(), pos.getZ(), PositionFlag.DELTA, 0, 0, false);
             player.teleport(pos.getX(), pos.getY(), pos.getZ(), false);
-            PagedGui.playClickSound(player, SoundEvents.ITEM_CHORUS_FRUIT_TELEPORT);
+            PagedGui.playClickSound(player, Registries.SOUND_EVENT.getEntry(SoundEvents.ITEM_CHORUS_FRUIT_TELEPORT));
         }));
     }
 

@@ -1,11 +1,14 @@
 package edu.byu.minecraft.invbackup.gui;
 
 import eu.pb4.sgui.api.gui.SimpleGui;
+import net.minecraft.network.packet.s2c.play.PlaySoundS2CPacket;
+import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.screen.ScreenHandlerType;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.sound.SoundEvents;
+import net.minecraft.util.math.Vec3d;
 
 public abstract class PagedGui extends SimpleGui {
     public static final int PAGE_SIZE = 9 * 5;
@@ -76,10 +79,16 @@ public abstract class PagedGui extends SimpleGui {
     protected abstract GuiSlot getNavElement(int id);
 
     public static void playClickSound(ServerPlayerEntity player) {
-        player.playSoundToPlayer(SoundEvents.UI_BUTTON_CLICK.value(), SoundCategory.MASTER, 1, 1);
+        playClickSound(player, SoundEvents.UI_BUTTON_CLICK);
     }
 
-    public static void playClickSound(ServerPlayerEntity player, SoundEvent soundEvent) {
-        player.playSoundToPlayer(soundEvent, SoundCategory.MASTER, 1, 1);
+    public static void playClickSound(ServerPlayerEntity player, RegistryEntry<SoundEvent> soundEvent) {
+        player.networkHandler.sendPacket(new PlaySoundS2CPacket(
+                soundEvent,
+                SoundCategory.MASTER,
+                player.getX(), player.getY(), player.getZ(),
+                1, 1,
+                player.getRandom().nextLong()
+        ));
     }
 }

@@ -1,5 +1,5 @@
 plugins {
-	id 'fabric-loom' version "${loom_version}"
+	id 'net.fabricmc.fabric-loom-remap' version "${loom_version}"
 	id 'maven-publish'
 }
 
@@ -58,9 +58,9 @@ dependencies {
 	// These are included in the Fabric API production distribution and allow you to update your mod to the latest modules at a later more convenient time.
 	// modImplementation "net.fabricmc.fabric-api:fabric-api-deprecated:${project.fabric_version}"
 
-	modImplementation include("eu.pb4:sgui:1.11.0+1.21.9")
+	modImplementation include("eu.pb4:sgui:${project.sgui_version}")
 
-	modImplementation include('me.lucko:fabric-permissions-api:0.3.4-patbox')
+	modImplementation include("me.lucko:fabric-permissions-api:${project.permissions_api_version}")
 }
 
 processResources {
