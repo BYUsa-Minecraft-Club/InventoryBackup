@@ -51,7 +51,7 @@ public class TypedBackupListGui extends PagedGui {
 
             Item displayItem = GuiConfig.logTypeItem(backupData.logType());
             var element = GuiSlot.builder(displayItem, title).setCallback(
-                    (index, type, action) -> new BackupGui(targetUUID, playerName, backupData, this, player).open());
+                    () -> new BackupGui(targetUUID, playerName, backupData, this, player).open());
 
             return GuiSlot.of(element);
         }

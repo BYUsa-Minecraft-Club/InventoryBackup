@@ -17,7 +17,6 @@ import net.minecraft.commands.arguments.EntityArgument;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
-import java.util.function.Predicate;
 
 import static net.minecraft.commands.Commands.argument;
 import static net.minecraft.commands.Commands.literal;
@@ -28,7 +27,7 @@ public class Commands {
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher, CommandBuildContext registryAccess,
                                 CommandSelection environment) {
         dispatcher.register(literal("invbackup").requires(Permissions.require("inventorybackup", 3)
-                        .and(((Predicate<CommandSourceStack>) CommandSourceStack::isPlayer)))
+                        .and(CommandSourceStack::isPlayer))
                 .then(literal("restore").executes(Commands::listAll)
                         .then(argument("player", StringArgumentType.word())
                                 .suggests(SuggestionProviders::allPlayers)

@@ -3,9 +3,10 @@ package edu.byu.minecraft.invbackup.gui;
 import edu.byu.minecraft.InventoryBackup;
 import edu.byu.minecraft.invbackup.data.PlayerBackupData;
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
-import eu.pb4.sgui.api.gui.GuiInterface;
 import java.util.Objects;
 import java.util.UUID;
+
+import eu.pb4.sgui.api.gui.GuiLike;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.SimpleContainer;
@@ -17,10 +18,10 @@ public class BackupGui extends PagedGui {
     private final UUID targetUUID;
     private final String playerName;
     private final PlayerBackupData playerBackupData;
-    private final GuiInterface previousUi;
+    private final GuiLike previousUi;
 
 
-    public BackupGui(UUID uuid, String playerName, PlayerBackupData playerBackupData, GuiInterface previousUi, ServerPlayer player) {
+    public BackupGui(UUID uuid, String playerName, PlayerBackupData playerBackupData, GuiLike previousUi, ServerPlayer player) {
         super(player);
         this.targetUUID = uuid;
         this.playerName = playerName;
@@ -84,7 +85,7 @@ public class BackupGui extends PagedGui {
     public GuiSlot viewEnderChest() {
         if (canNextPage()) {
             GuiElementBuilder icon = GuiSlot.builder(Items.ENDER_CHEST, "View Ender Chest");
-            return GuiSlot.of(icon.setCallback((x, y, z) -> {
+            return GuiSlot.of(icon.setCallback(() -> {
                 PagedGui.playClickSound(getPlayer());
                 nextPage();
             }));
@@ -96,7 +97,7 @@ public class BackupGui extends PagedGui {
     public GuiSlot viewInventory() {
         if (canPreviousPage()) {
             GuiElementBuilder icon = GuiSlot.builder(GuiUtils.getPlayerHead(targetUUID, playerName), "View Inventory");
-            return GuiSlot.of(icon.setCallback((x, y, z) -> {
+            return GuiSlot.of(icon.setCallback(() -> {
                 PagedGui.playClickSound(getPlayer());
                 previousPage();
             }));
@@ -106,8 +107,13 @@ public class BackupGui extends PagedGui {
     }
 
     @Override
-    public void onClose() {
-        super.onClose();
+    public void onRemoved() {
+        super.onRemoved();
+        onManualClose();
+    }
+
+    @Override
+    public void onManualClose() {
         InventoryBackup.data.setDirty();
     }
 }

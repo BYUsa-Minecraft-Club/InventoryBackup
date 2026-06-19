@@ -35,17 +35,17 @@ public class PlayerBackupListGui extends PagedGui {
             LogType logType = types.get(id);
 
             var element = GuiSlot.builder(GuiConfig.logTypeItem(logType), GuiUtils.readableLogType(logType) + " Backups")
-                    .setCallback((index, type, action) -> new TypedBackupListGui(targetUUID, playerName, logType, player).open());
+                    .setCallback(() -> new TypedBackupListGui(targetUUID, playerName, logType, player).open());
 
             return GuiSlot.of(element);
         }
         else if (id == 9) {
             return GuiSlot.of(GuiSlot.builder(GuiUtils.getPlayerHead(targetUUID, playerName), "Live Inventory")
-                    .setCallback((index, type, action) -> new LiveInventoryGui(playerName, this, player).open()));
+                    .setCallback(() -> new LiveInventoryGui(playerName, this, player).open()));
         }
         else if (id == 10) {
             var element = GuiSlot.builder(Items.CHEST, "All Backups")
-                    .setCallback((index, type, action) -> new TypedBackupListGui(targetUUID, playerName, null, player).open());
+                    .setCallback(() -> new TypedBackupListGui(targetUUID, playerName, null, player).open());
 
             return GuiSlot.of(element);
         }

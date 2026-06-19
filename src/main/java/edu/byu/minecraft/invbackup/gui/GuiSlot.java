@@ -2,9 +2,7 @@ package edu.byu.minecraft.invbackup.gui;
 
 import edu.byu.minecraft.InventoryBackup;
 import edu.byu.minecraft.invbackup.data.PlayerBackupData;
-import eu.pb4.sgui.api.elements.GuiElementBuilder;
-import eu.pb4.sgui.api.elements.GuiElementBuilderInterface;
-import eu.pb4.sgui.api.elements.GuiElementInterface;
+import eu.pb4.sgui.api.elements.*;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
@@ -26,7 +24,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
-public record GuiSlot(@Nullable GuiElementInterface element, @Nullable Slot slot) {
+public record GuiSlot(@Nullable GuiElement element, @Nullable Slot slot) {
 
     static final GuiSlot EMPTY;
     static final ItemStack EMPTY_STACK;
@@ -37,7 +35,7 @@ public record GuiSlot(@Nullable GuiElementInterface element, @Nullable Slot slot
     }
 
 
-    public static GuiSlot of(GuiElementBuilderInterface<?> element) {
+    public static GuiSlot of(GuiElementBuilderCreator<?> element) {
         return new GuiSlot(element.build(), null);
     }
 
@@ -63,7 +61,7 @@ public record GuiSlot(@Nullable GuiElementInterface element, @Nullable Slot slot
 
     public static GuiSlot nextPage(PagedGui gui) {
         if (gui.canNextPage()) {
-            return GuiSlot.of(GuiConfig.NEXT_PAGE_BUTTON.setCallback((x, y, z) -> {
+            return GuiSlot.of(GuiConfig.NEXT_PAGE_BUTTON.setCallback(() -> {
                 PagedGui.playClickSound(gui.getPlayer());
                 gui.nextPage();
             }));
@@ -75,7 +73,7 @@ public record GuiSlot(@Nullable GuiElementInterface element, @Nullable Slot slot
 
     public static GuiSlot previousPage(PagedGui gui) {
         if (gui.canPreviousPage()) {
-            return GuiSlot.of(GuiConfig.PREVIOUS_PAGE_BUTTON.setCallback((x, y, z) -> {
+            return GuiSlot.of(GuiConfig.PREVIOUS_PAGE_BUTTON.setCallback(() -> {
                 PagedGui.playClickSound(gui.getPlayer());
                 gui.previousPage();
             }));

@@ -32,7 +32,7 @@ public class AllBackupListGui extends PagedGui {
             ItemStack playerHead = GuiUtils.getPlayerHead(playerData.getKey(), playerData.getValue());
             GuiElementBuilder element = GuiElementBuilder.from(playerHead)
                     .setName(Component.nullToEmpty(playerData.getValue()))
-                    .setCallback((index, type, action) -> new PlayerBackupListGui(playerData.getKey(),
+                    .setCallback(() -> new PlayerBackupListGui(playerData.getKey(),
                     playerData.getValue(), player).open());
 
             return GuiSlot.of(element);

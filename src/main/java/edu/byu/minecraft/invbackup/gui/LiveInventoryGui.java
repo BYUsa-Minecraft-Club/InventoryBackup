@@ -1,11 +1,8 @@
 package edu.byu.minecraft.invbackup.gui;
 
 import edu.byu.minecraft.InventoryBackup;
-import eu.pb4.sgui.api.ClickType;
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
-import eu.pb4.sgui.api.elements.GuiElementInterface;
-import eu.pb4.sgui.api.gui.GuiInterface;
-import java.util.Objects;
+import eu.pb4.sgui.api.gui.GuiLike;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.inventory.Slot;
@@ -13,11 +10,11 @@ import net.minecraft.world.item.Items;
 
 public class LiveInventoryGui extends PagedGui {
     private final String playerName;
-    private final GuiInterface previousUi;
+    private final GuiLike previousUi;
     private final ServerPlayer target;
 
 
-    public LiveInventoryGui(String playerName, GuiInterface previousUi, ServerPlayer player) {
+    public LiveInventoryGui(String playerName, GuiLike previousUi, ServerPlayer player) {
         super(player);
         this.playerName = playerName;
         this.setTitle(Component.nullToEmpty(String.format("%s's Live Inventory", playerName)));
@@ -75,7 +72,7 @@ public class LiveInventoryGui extends PagedGui {
     public GuiSlot viewEnderChest() {
         if (canNextPage()) {
             GuiElementBuilder icon = GuiSlot.builder(Items.ENDER_CHEST, "View Ender Chest");
-            return GuiSlot.of(icon.setCallback((x, y, z) -> {
+            return GuiSlot.of(icon.setCallback(() -> {
                 PagedGui.playClickSound(getPlayer());
                 nextPage();
             }));
@@ -87,7 +84,7 @@ public class LiveInventoryGui extends PagedGui {
     public GuiSlot viewInventory() {
         if (canPreviousPage()) {
             GuiElementBuilder icon = GuiSlot.builder(GuiUtils.getPlayerHead(target.getUUID(), playerName), "View Inventory");
-            return GuiSlot.of(icon.setCallback((x, y, z) -> {
+            return GuiSlot.of(icon.setCallback(() -> {
                 PagedGui.playClickSound(getPlayer());
                 previousPage();
             }));
@@ -97,8 +94,13 @@ public class LiveInventoryGui extends PagedGui {
     }
 
     @Override
-    public void onClose() {
-        super.onClose();
+    public void onRemoved() {
+        super.onRemoved();
+        onManualClose();
+    }
+
+    @Override
+    public void onManualClose() {
         InventoryBackup.savePlayerData(target);
     }
 }
