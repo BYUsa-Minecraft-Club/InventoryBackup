@@ -2,13 +2,12 @@ package edu.byu.minecraft.invbackup.gui;
 
 import edu.byu.minecraft.InventoryBackup;
 import edu.byu.minecraft.invbackup.data.LogType;
-import net.minecraft.item.Items;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.Text;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.item.Items;
 
 public class PlayerBackupListGui extends PagedGui {
     private final UUID targetUUID;
@@ -16,11 +15,11 @@ public class PlayerBackupListGui extends PagedGui {
     private int ticker = 0;
     private List<LogType> types;
 
-    public PlayerBackupListGui(UUID uuid, String playerName, ServerPlayerEntity player) {
+    public PlayerBackupListGui(UUID uuid, String playerName, ServerPlayer player) {
         super(player);
         this.targetUUID = uuid;
         this.playerName = playerName;
-        this.setTitle(Text.of(playerName + "'s Backups"));
+        this.setTitle(Component.nullToEmpty(playerName + "'s Backups"));
         this.types = getLogTypes();
         this.updateDisplay();
     }

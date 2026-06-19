@@ -5,27 +5,24 @@ import eu.pb4.sgui.api.ClickType;
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
 import eu.pb4.sgui.api.elements.GuiElementInterface;
 import eu.pb4.sgui.api.gui.GuiInterface;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.screen.slot.Slot;
-import net.minecraft.screen.slot.SlotActionType;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.Text;
-
 import java.util.Objects;
+import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.inventory.Slot;
+import net.minecraft.world.item.Items;
 
 public class LiveInventoryGui extends PagedGui {
     private final String playerName;
     private final GuiInterface previousUi;
-    private final ServerPlayerEntity target;
+    private final ServerPlayer target;
 
 
-    public LiveInventoryGui(String playerName, GuiInterface previousUi, ServerPlayerEntity player) {
+    public LiveInventoryGui(String playerName, GuiInterface previousUi, ServerPlayer player) {
         super(player);
         this.playerName = playerName;
-        this.setTitle(Text.of(String.format("%s's Live Inventory", playerName)));
+        this.setTitle(Component.nullToEmpty(String.format("%s's Live Inventory", playerName)));
         this.previousUi = previousUi;
-        this.target = InventoryBackup.getPlayer(playerName, player.getEntityWorld().getServer());
+        this.target = InventoryBackup.getPlayer(playerName, player.level().getServer());
         this.updateDisplay();
     }
 
@@ -42,9 +39,9 @@ public class LiveInventoryGui extends PagedGui {
         } else if (id == 8) {
             return GuiSlot.of(new Slot(target.getInventory(), 40, 0, 0));
         } else if (id == 4) {
-            return GuiSlot.of(GuiElementBuilder.from(GuiSlot.EMPTY_STACK).setName(Text.of("← Armor ←")));
+            return GuiSlot.of(GuiElementBuilder.from(GuiSlot.EMPTY_STACK).setName(Component.nullToEmpty("← Armor ←")));
         } else if (id == 7) {
-            return GuiSlot.of(GuiElementBuilder.from(GuiSlot.EMPTY_STACK).setName(Text.of("→ Offhand →")));
+            return GuiSlot.of(GuiElementBuilder.from(GuiSlot.EMPTY_STACK).setName(Component.nullToEmpty("→ Offhand →")));
         } else if (id < 9) {
             return GuiSlot.empty();
         }
@@ -69,8 +66,8 @@ public class LiveInventoryGui extends PagedGui {
             });
             case 2 -> viewInventory();
             case 6 -> viewEnderChest();
-            case 8 -> GuiSlot.teleport(player, player.getEntityWorld().getRegistryKey().getValue(),
-                    player.getEntityPos(), "Player");
+            case 8 -> GuiSlot.teleport(player, player.level().dimension().identifier(),
+                    player.position(), "Player");
             default ->  GuiSlot.empty();
         };
     }
@@ -89,7 +86,7 @@ public class LiveInventoryGui extends PagedGui {
 
     public GuiSlot viewInventory() {
         if (canPreviousPage()) {
-            GuiElementBuilder icon = GuiSlot.builder(GuiUtils.getPlayerHead(target.getUuid(), playerName), "View Inventory");
+            GuiElementBuilder icon = GuiSlot.builder(GuiUtils.getPlayerHead(target.getUUID(), playerName), "View Inventory");
             return GuiSlot.of(icon.setCallback((x, y, z) -> {
                 PagedGui.playClickSound(getPlayer());
                 previousPage();

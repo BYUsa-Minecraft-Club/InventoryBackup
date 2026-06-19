@@ -2,21 +2,20 @@ package edu.byu.minecraft.invbackup.gui;
 
 import edu.byu.minecraft.InventoryBackup;
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
-import net.minecraft.item.ItemStack;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.Text;
-
 import java.util.*;
+import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.item.ItemStack;
 
 public class AllBackupListGui extends PagedGui {
     private int ticker = 0;
     private List<Map.Entry<UUID, String>> players;
 
 
-    public AllBackupListGui(ServerPlayerEntity player) {
+    public AllBackupListGui(ServerPlayer player) {
         super(player);
 
-        this.setTitle(Text.of("All Players"));
+        this.setTitle(Component.nullToEmpty("All Players"));
         this.players = getPlayers();
         this.updateDisplay();
     }
@@ -32,7 +31,7 @@ public class AllBackupListGui extends PagedGui {
             Map.Entry<UUID, String> playerData = players.get(id);
             ItemStack playerHead = GuiUtils.getPlayerHead(playerData.getKey(), playerData.getValue());
             GuiElementBuilder element = GuiElementBuilder.from(playerHead)
-                    .setName(Text.of(playerData.getValue()))
+                    .setName(Component.nullToEmpty(playerData.getValue()))
                     .setCallback((index, type, action) -> new PlayerBackupListGui(playerData.getKey(),
                     playerData.getValue(), player).open());
 

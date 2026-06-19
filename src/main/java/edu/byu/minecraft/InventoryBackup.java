@@ -10,16 +10,16 @@ import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerEntityEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
-import net.minecraft.entity.Entity;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.network.packet.c2s.common.SyncedClientOptions;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.PlayerConfigEntry;
-import net.minecraft.server.PlayerManager;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.storage.NbtReadView;
-import net.minecraft.util.ErrorReporter;
+import net.minecraft.server.level.ClientInformation;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.players.NameAndId;
+import net.minecraft.server.players.PlayerList;
+import net.minecraft.util.ProblemReporter;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.level.storage.TagValueInput;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -56,8 +56,8 @@ public class InventoryBackup implements ModInitializer {
         data = SaveData.getServerState(server);
     }
 
-    private void entityUnload(Entity entity, ServerWorld world) {
-        if (entity instanceof ServerPlayerEntity player && player.getHealth() > 0 && !player.isDisconnected()) {
+    private void entityUnload(Entity entity, ServerLevel world) {
+        if (entity instanceof ServerPlayer player && player.getHealth() > 0 && !player.hasDisconnected()) {
             PlayerBackupData backupData = PlayerBackupData.forPlayer(player, LogType.WORLD_CHANGE);
             InventoryBackup.data.addBackup(backupData);
         }
@@ -73,8 +73,8 @@ public class InventoryBackup implements ModInitializer {
         };
     }
 
-    public static ServerPlayerEntity getPlayer(String playerName, MinecraftServer server) {
-        ServerPlayerEntity requestedPlayer = server.getPlayerManager().getPlayer(playerName);
+    public static ServerPlayer getPlayer(String playerName, MinecraftServer server) {
+        ServerPlayer requestedPlayer = server.getPlayerList().getPlayerByName(playerName);
 
         if (requestedPlayer == null) {
             UUID uuid = InventoryBackup.data.getPlayers().entrySet().stream()
@@ -84,17 +84,17 @@ public class InventoryBackup implements ModInitializer {
                 throw new RuntimeException("Cannot find player with name " + playerName);
             }
             GameProfile profile = new GameProfile(uuid, playerName);
-            requestedPlayer = new ServerPlayerEntity(server, server.getOverworld(), profile, SyncedClientOptions.createDefault());
-            NbtCompound nbt = server.getPlayerManager().loadPlayerData(new PlayerConfigEntry(profile)).orElseThrow();
-            requestedPlayer.readData(NbtReadView.create(new ErrorReporter.Impl(() -> MOD_ID), server.getRegistryManager(), nbt));
+            requestedPlayer = new ServerPlayer(server, server.overworld(), profile, ClientInformation.createDefault());
+            CompoundTag nbt = server.getPlayerList().loadPlayerData(new NameAndId(profile)).orElseThrow();
+            requestedPlayer.load(TagValueInput.create(new ProblemReporter.Collector(() -> MOD_ID), server.registryAccess(), nbt));
         }
 
         return requestedPlayer;
     }
 
-    public static void savePlayerData(ServerPlayerEntity player) {
-        PlayerManager pm = player.getEntityWorld().getServer().getPlayerManager();
-        if(!pm.getPlayerList().contains(player)) {
+    public static void savePlayerData(ServerPlayer player) {
+        PlayerList pm = player.level().getServer().getPlayerList();
+        if(!pm.getPlayers().contains(player)) {
             ((PlayerManagerAccessor) pm).callSavePlayerData(player);
         }
     }

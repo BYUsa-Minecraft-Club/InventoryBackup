@@ -1,21 +1,20 @@
 package edu.byu.minecraft.invbackup.gui;
 
 import eu.pb4.sgui.api.gui.SimpleGui;
-import net.minecraft.network.packet.s2c.play.PlaySoundS2CPacket;
-import net.minecraft.registry.entry.RegistryEntry;
-import net.minecraft.screen.ScreenHandlerType;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.sound.SoundCategory;
-import net.minecraft.sound.SoundEvent;
-import net.minecraft.sound.SoundEvents;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.core.Holder;
+import net.minecraft.network.protocol.game.ClientboundSoundPacket;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.inventory.MenuType;
 
 public abstract class PagedGui extends SimpleGui {
     public static final int PAGE_SIZE = 9 * 5;
     protected int page = 0;
 
-    public PagedGui(ServerPlayerEntity player) {
-        super(ScreenHandlerType.GENERIC_9X6, player, false);
+    public PagedGui(ServerPlayer player) {
+        super(MenuType.GENERIC_9x6, player, false);
     }
 
     protected void nextPage() {
@@ -78,14 +77,14 @@ public abstract class PagedGui extends SimpleGui {
 
     protected abstract GuiSlot getNavElement(int id);
 
-    public static void playClickSound(ServerPlayerEntity player) {
+    public static void playClickSound(ServerPlayer player) {
         playClickSound(player, SoundEvents.UI_BUTTON_CLICK);
     }
 
-    public static void playClickSound(ServerPlayerEntity player, RegistryEntry<SoundEvent> soundEvent) {
-        player.networkHandler.sendPacket(new PlaySoundS2CPacket(
+    public static void playClickSound(ServerPlayer player, Holder<SoundEvent> soundEvent) {
+        player.connection.send(new ClientboundSoundPacket(
                 soundEvent,
-                SoundCategory.MASTER,
+                SoundSource.MASTER,
                 player.getX(), player.getY(), player.getZ(),
                 1, 1,
                 player.getRandom().nextLong()

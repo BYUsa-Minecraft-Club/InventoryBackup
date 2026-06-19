@@ -3,24 +3,19 @@ package edu.byu.minecraft.invbackup.data;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import edu.byu.minecraft.InventoryBackup;
-import net.minecraft.item.ItemStack;
+import net.minecraft.core.UUIDUtil;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.Pair;
-import net.minecraft.util.Uuids;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.PersistentState;
-import net.minecraft.world.PersistentStateType;
-
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.level.saveddata.SavedData;
+import net.minecraft.world.level.saveddata.SavedDataType;
 import java.util.*;
 
-public class SaveData extends PersistentState {
+public class SaveData extends SavedData {
 
     private static final Codec<SaveData> CODEC = RecordCodecBuilder.create((instance) -> instance.group(
-                    Codec.unboundedMap(Uuids.CODEC, Codec.unboundedMap(LogType.CODEC,
+                    Codec.unboundedMap(UUIDUtil.AUTHLIB_CODEC, Codec.unboundedMap(LogType.CODEC,
                             PlayerBackupData.CODEC.listOf())).fieldOf("data").forGetter(SaveData::getData),
-                    Codec.unboundedMap(Uuids.CODEC, Codec.STRING).fieldOf("players").forGetter(SaveData::getPlayers))
+                    Codec.unboundedMap(UUIDUtil.AUTHLIB_CODEC, Codec.STRING).fieldOf("players").forGetter(SaveData::getPlayers))
             .apply(instance, SaveData::new));
 
     private final Map<UUID, Map<LogType, List<PlayerBackupData>>> data;
@@ -44,16 +39,16 @@ public class SaveData extends PersistentState {
     }
 
     public static SaveData getServerState(MinecraftServer server) {
-        return server.getOverworld().getPersistentStateManager()
-                .getOrCreate(new PersistentStateType<>(InventoryBackup.MOD_ID, SaveData::new, CODEC, null));
+        return server.overworld().getDataStorage()
+                .computeIfAbsent(new SavedDataType<>(InventoryBackup.MOD_ID, SaveData::new, CODEC, null));
     }
 
-    public void checkPlayer(ServerPlayerEntity player) {
-        UUID playerUUID = player.getUuid();
+    public void checkPlayer(ServerPlayer player) {
+        UUID playerUUID = player.getUUID();
         String playerName = player.getGameProfile().name();
         if(!players.containsKey(playerUUID) || !players.get(playerUUID).equals(playerName)) {
             players.put(playerUUID, playerName);
-            markDirty();
+            setDirty();
         }
     }
 
@@ -73,7 +68,7 @@ public class SaveData extends PersistentState {
             data.get(backup.uuid()).get(backup.logType()).removeFirst();
         }
 
-        markDirty();
+        setDirty();
     }
 
     public Map<UUID, Map<LogType, List<PlayerBackupData>>> getData() {

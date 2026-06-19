@@ -3,14 +3,13 @@ package edu.byu.minecraft.invbackup.gui;
 import edu.byu.minecraft.InventoryBackup;
 import edu.byu.minecraft.invbackup.data.LogType;
 import edu.byu.minecraft.invbackup.data.PlayerBackupData;
-import net.minecraft.item.Item;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.Text;
-
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
+import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.item.Item;
 
 public class TypedBackupListGui extends PagedGui {
 
@@ -25,14 +24,14 @@ public class TypedBackupListGui extends PagedGui {
     private List<PlayerBackupData> data;
 
 
-    public TypedBackupListGui(UUID uuid, String playerName, LogType logType, ServerPlayerEntity player) {
+    public TypedBackupListGui(UUID uuid, String playerName, LogType logType, ServerPlayer player) {
         super(player);
         this.targetUUID = uuid;
         this.playerName = playerName;
         this.logType = logType;
         String title = logType == null ? String.format("All of %s's Backups", playerName) :
                 String.format("%s's %s Backups", playerName, GuiUtils.readableLogType(logType));
-        this.setTitle(Text.of(title));
+        this.setTitle(Component.nullToEmpty(title));
         this.data = getData();
         this.updateDisplay();
     }

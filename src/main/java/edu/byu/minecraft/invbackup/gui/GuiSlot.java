@@ -5,23 +5,22 @@ import edu.byu.minecraft.invbackup.data.PlayerBackupData;
 import eu.pb4.sgui.api.elements.GuiElementBuilder;
 import eu.pb4.sgui.api.elements.GuiElementBuilderInterface;
 import eu.pb4.sgui.api.elements.GuiElementInterface;
-import net.minecraft.component.DataComponentTypes;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.network.packet.s2c.play.PositionFlag;
-import net.minecraft.registry.Registries;
-import net.minecraft.registry.RegistryKey;
-import net.minecraft.registry.RegistryKeys;
-import net.minecraft.screen.slot.Slot;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.sound.SoundEvent;
-import net.minecraft.sound.SoundEvents;
-import net.minecraft.text.Text;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.world.entity.Relative;
+import net.minecraft.world.inventory.Slot;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -33,7 +32,7 @@ public record GuiSlot(@Nullable GuiElementInterface element, @Nullable Slot slot
     static final ItemStack EMPTY_STACK;
     static {
         EMPTY_STACK = new ItemStack(Items.BLACK_STAINED_GLASS_PANE);
-        EMPTY_STACK.set(DataComponentTypes.ITEM_NAME, Text.empty());
+        EMPTY_STACK.set(DataComponents.ITEM_NAME, Component.empty());
         EMPTY = GuiSlot.of(GuiElementBuilder.from(EMPTY_STACK).hideTooltip().hideDefaultTooltip());
     }
 
@@ -47,16 +46,16 @@ public record GuiSlot(@Nullable GuiElementInterface element, @Nullable Slot slot
     }
 
     public static GuiElementBuilder builder(Item base, String... text) {
-        return builder(base.getDefaultStack(), text);
+        return builder(base.getDefaultInstance(), text);
     }
 
     public static GuiElementBuilder builder(ItemStack stack, String... text) {
-        List<Text> list = new ArrayList<>();
+        List<Component> list = new ArrayList<>();
         for (String s : text) {
-            list.add(Text.of(s));
+            list.add(Component.nullToEmpty(s));
         }
         if (list.isEmpty()) {
-            list.add(Text.empty());
+            list.add(Component.empty());
         }
         return GuiElementBuilder.from(stack).setName(list.removeFirst()).setLore(list);
     }
@@ -99,15 +98,15 @@ public record GuiSlot(@Nullable GuiElementInterface element, @Nullable Slot slot
     }
 
 
-    public static GuiSlot teleport(ServerPlayerEntity player, Identifier world, Vec3d pos, String target) {
+    public static GuiSlot teleport(ServerPlayer player, Identifier world, Vec3 pos, String target) {
         return GuiSlot.of(GuiConfig.teleportButton(target).setCallback(() -> {
             PagedGui.playClickSound(player);
-            ServerWorld destWorld = player.getEntityWorld().getServer().getWorld(RegistryKey.of(RegistryKeys.WORLD, world));
+            ServerLevel destWorld = player.level().getServer().getLevel(ResourceKey.create(Registries.DIMENSION, world));
             if (destWorld == null) return;
 
-            player.teleport(destWorld, pos.getX(), pos.getY(), pos.getZ(), PositionFlag.DELTA, 0, 0, false);
-            player.teleport(pos.getX(), pos.getY(), pos.getZ(), false);
-            PagedGui.playClickSound(player, Registries.SOUND_EVENT.getEntry(SoundEvents.ITEM_CHORUS_FRUIT_TELEPORT));
+            player.teleportTo(destWorld, pos.x(), pos.y(), pos.z(), Relative.DELTA, 0, 0, false);
+            player.randomTeleport(pos.x(), pos.y(), pos.z(), false);
+            PagedGui.playClickSound(player, BuiltInRegistries.SOUND_EVENT.wrapAsHolder(SoundEvents.CHORUS_FRUIT_TELEPORT));
         }));
     }
 
@@ -116,7 +115,7 @@ public record GuiSlot(@Nullable GuiElementInterface element, @Nullable Slot slot
         String playerName = InventoryBackup.data.getPlayers().get(data.uuid());
         if(playerName == null) return GuiSlot.empty();
         return GuiSlot.of(GuiConfig.RESTORE_INVENTORY_BUTTON.setCallback(() -> {
-            ServerPlayerEntity target = InventoryBackup.getPlayer(playerName, server);
+            ServerPlayer target = InventoryBackup.getPlayer(playerName, server);
             data.restore(target);
             InventoryBackup.savePlayerData(target);
         }));
